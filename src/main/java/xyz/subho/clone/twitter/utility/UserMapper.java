@@ -22,12 +22,15 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import xyz.subho.clone.twitter.entity.Users;
 import xyz.subho.clone.twitter.model.UserModel;
+import xyz.subho.clone.twitter.model.UserSearchModel;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
   @Mapping(target = "password", ignore = true)
   UserModel toModel(Users user);
+
+  UserSearchModel toSearchModel(Users user);
 
   @Mapping(target = "userLikes", ignore = true)
   @Mapping(target = "userPosts", ignore = true)

@@ -26,6 +26,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
@@ -34,7 +35,13 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    indexes = {
+      @Index(name = "idx_users_username", columnList = "username"),
+      @Index(name = "idx_users_name", columnList = "name"),
+      @Index(name = "idx_users_bio", columnList = "bio")
+    })
 public class Users extends Auditable {
 
   @Id

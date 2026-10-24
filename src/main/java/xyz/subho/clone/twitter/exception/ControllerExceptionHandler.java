@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -82,7 +83,8 @@ public class ControllerExceptionHandler {
   @ExceptionHandler({
     HttpMessageNotReadableException.class,
     MethodArgumentTypeMismatchException.class,
-    ConstraintViolationException.class
+    ConstraintViolationException.class,
+    MissingServletRequestParameterException.class
   })
   public ResponseEntity<ErrorResponse> malformedRequestExceptionHandler(WebRequest request) {
     return errorResponse(HttpStatus.BAD_REQUEST, "Malformed request", request);
