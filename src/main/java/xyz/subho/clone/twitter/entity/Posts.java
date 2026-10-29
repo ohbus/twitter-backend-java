@@ -31,8 +31,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +67,7 @@ public class Posts extends Auditable {
   @CreatedBy
   private Users users;
 
-  @ElementCollection private Map<String, Date> images = new HashMap<>(4); // maximum of 4 images
+  @ElementCollection private Map<String, Instant> images = new HashMap<>(4); // maximum of 4 images
 
   @Column(name = "like_count", nullable = false)
   private Long likeCount = 0L;
@@ -81,9 +81,9 @@ public class Posts extends Auditable {
   @Column(name = "reply_to_id")
   private UUID replyToId;
 
-  @ElementCollection private Map<String, Date> hashtags = new HashMap<>();
+  @ElementCollection private Map<String, Instant> hashtags = new HashMap<>();
 
-  @ElementCollection private Map<String, Date> mentions = new HashMap<>();
+  @ElementCollection private Map<String, Instant> mentions = new HashMap<>();
 
   @OneToMany(mappedBy = "posts", fetch = FetchType.LAZY)
   @JsonIgnore
@@ -133,11 +133,11 @@ public class Posts extends Auditable {
     this.users = users;
   }
 
-  public Map<String, Date> getImages() {
+  public Map<String, Instant> getImages() {
     return images;
   }
 
-  public void setImages(Map<String, Date> images) {
+  public void setImages(Map<String, Instant> images) {
     this.images = images;
   }
 
@@ -173,19 +173,19 @@ public class Posts extends Auditable {
     this.replyToId = replyToId;
   }
 
-  public Map<String, Date> getHashtags() {
+  public Map<String, Instant> getHashtags() {
     return hashtags;
   }
 
-  public void setHashtags(Map<String, Date> hashtags) {
+  public void setHashtags(Map<String, Instant> hashtags) {
     this.hashtags = hashtags;
   }
 
-  public Map<String, Date> getMentions() {
+  public Map<String, Instant> getMentions() {
     return mentions;
   }
 
-  public void setMentions(Map<String, Date> mentions) {
+  public void setMentions(Map<String, Instant> mentions) {
     this.mentions = mentions;
   }
 

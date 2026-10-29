@@ -18,7 +18,7 @@
 
 package xyz.subho.clone.twitter.model;
 
-import java.util.Date;
+import java.time.Instant;
 
 public record ErrorResponse(
-    Integer statusCode, Date timestamp, String message, String description) {}
+    Integer statusCode, Instant timestamp, String message, String description) {}

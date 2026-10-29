@@ -23,6 +23,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ class JwtSecurityTest {
     String token = jwtUtil.generateToken(user);
 
     assertThat(jwtUtil.extractUsername(token)).isEqualTo("alice");
-    assertThat(jwtUtil.extractExpiration(token)).isAfter(new Date());
+    assertThat(jwtUtil.extractExpiration(token)).isAfter(Instant.now());
     assertThat(jwtUtil.validateToken(token, user)).isTrue();
     assertThat(jwtUtil.validateToken(token, User.withUsername("bob").password("hash").build()))
         .isFalse();

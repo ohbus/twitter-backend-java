@@ -24,7 +24,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -56,8 +56,8 @@ public class JwtUtil {
     return extractClaim(token, Claims::getSubject);
   }
 
-  public Date extractExpiration(String token) {
-    return extractClaim(token, Claims::getExpiration);
+  public Instant extractExpiration(String token) {
+    return extractClaim(token, Claims::getExpiration).toInstant();
   }
 
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -74,12 +74,14 @@ public class JwtUtil {
     return createToken(claims, userDetails.getUsername());
   }
 
+  @SuppressWarnings("java:S2143") // JJWT 0.12 accepts java.util.Date at this library boundary.
   private String createToken(Map<String, Object> claims, String subject) {
+    Instant issuedAt = Instant.now();
     return Jwts.builder()
         .claims(claims)
         .subject(subject)
-        .issuedAt(new Date(System.currentTimeMillis()))
-        .expiration(new Date(System.currentTimeMillis() + expiration))
+        .issuedAt(java.util.Date.from(issuedAt))
+        .expiration(java.util.Date.from(issuedAt.plusMillis(expiration)))
         .signWith(getSignInKey())
         .compact();
   }
@@ -97,8 +99,10 @@ public class JwtUtil {
     try {
       Claims claims = extractAllClaims(token);
       String username = claims.getSubject();
-      Date tokenExpiration = claims.getExpiration();
-      return username != null && tokenExpiration != null && !tokenExpiration.before(new Date())
+      var tokenExpiration = claims.getExpiration();
+      return username != null
+              && tokenExpiration != null
+              && !tokenExpiration.toInstant().isBefore(Instant.now())
           ? username
           : null;
     } catch (JwtException | IllegalArgumentException exception) {

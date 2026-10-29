@@ -19,7 +19,7 @@
 package xyz.subho.clone.twitter.exception;
 
 import jakarta.validation.ConstraintViolationException;
-import java.util.Date;
+import java.time.Instant;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class ControllerExceptionHandler {
     var errorResponse =
         new ErrorResponse(
             HttpStatus.NOT_FOUND.value(),
-            new Date(),
+            Instant.now(),
             ex.getMessage(),
             request.getDescription(false));
     return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
@@ -58,7 +58,7 @@ public class ControllerExceptionHandler {
     var errorResponse =
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            new Date(),
+            Instant.now(),
             ex.getMessage(),
             request.getDescription(false));
     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -70,7 +70,7 @@ public class ControllerExceptionHandler {
     var errorResponse =
         new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            new Date(),
+            Instant.now(),
             "Validation failed: "
                 + ex.getBindingResult().getFieldErrors().stream()
                     .map(error -> error.getField() + " " + error.getDefaultMessage())
@@ -99,7 +99,7 @@ public class ControllerExceptionHandler {
     var errorResponse =
         new ErrorResponse(
             HttpStatus.FORBIDDEN.value(),
-            new Date(),
+            Instant.now(),
             "Access Denied: " + ex.getMessage(),
             request.getDescription(false));
     return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
@@ -115,7 +115,7 @@ public class ControllerExceptionHandler {
   private ResponseEntity<ErrorResponse> errorResponse(
       HttpStatus status, String message, WebRequest request) {
     var errorResponse =
-        new ErrorResponse(status.value(), new Date(), message, request.getDescription(false));
+        new ErrorResponse(status.value(), Instant.now(), message, request.getDescription(false));
     return new ResponseEntity<>(errorResponse, status);
   }
 }

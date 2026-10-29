@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import jakarta.validation.Validation;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,9 +45,9 @@ class UtilityAndMapperTest {
   void postMapperHandlesNullAndNonNullCollections() {
     PostMapper mapper = Mappers.getMapper(PostMapper.class);
     assertThat(mapper.mapToKeysList(null)).isEmpty();
-    assertThat(mapper.mapToKeysList(Map.of("java", new Date()))).containsExactly("java");
-    assertThat(mapper.listToDateMap(null)).isEmpty();
-    assertThat(mapper.listToDateMap(List.of("java"))).containsKey("java");
+    assertThat(mapper.mapToKeysList(Map.of("java", Instant.now()))).containsExactly("java");
+    assertThat(mapper.listToInstantMap(null)).isEmpty();
+    assertThat(mapper.listToInstantMap(List.of("java"))).containsKey("java");
   }
 
   @Test
