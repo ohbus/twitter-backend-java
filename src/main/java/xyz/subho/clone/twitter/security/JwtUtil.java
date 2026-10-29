@@ -100,11 +100,7 @@ public class JwtUtil {
       Claims claims = extractAllClaims(token);
       String username = claims.getSubject();
       var tokenExpiration = claims.getExpiration();
-      return username != null
-              && tokenExpiration != null
-              && !tokenExpiration.toInstant().isBefore(Instant.now())
-          ? username
-          : null;
+      return username != null && tokenExpiration != null ? username : null;
     } catch (JwtException | IllegalArgumentException _) {
       return null;
     }
