@@ -75,6 +75,7 @@
     <sonar.organization>ohbus</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.coverage.exclusions>**/entity/**,**/model/**,**/*MapperImpl*,**/TwitterBackendApplication*,**/*MockitoMock*,**/*$auxiliary$*,**/security/SecurityConfig.java</sonar.coverage.exclusions>
     <sonar.exclusions>.github/tests/**</sonar.exclusions>
   </properties>
   
@@ -286,12 +287,13 @@
             <include>xyz/subho/clone/twitter/**</include>
           </includes>
           <excludes>
-        <exclude>**/entity/**</exclude>
-        <exclude>**/model/**</exclude>
-        <exclude>**/*MapperImpl*</exclude>
-        <exclude>**/TwitterBackendApplication*</exclude>
+            <exclude>**/entity/**</exclude>
+            <exclude>**/model/**</exclude>
+            <exclude>**/*MapperImpl*</exclude>
+            <exclude>**/TwitterBackendApplication*</exclude>
             <exclude>**/*MockitoMock*</exclude>
             <exclude>**/*$auxiliary$*</exclude>
+            <exclude>**/security/SecurityConfig*</exclude>
           </excludes>
         </configuration>
         <executions>

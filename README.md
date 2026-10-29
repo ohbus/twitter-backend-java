@@ -56,6 +56,9 @@ Ideal for coding. Runs DB in Docker, App in your IDE/CLI.
 
 For advanced configuration, visit [Project Configuration](https://github.com/scaleracademy/twitter-backend-java/wiki/Project-Configuration).
 
+State-changing requests use the configured CSRF cookie/header pair in addition
+to JWT authentication. Timestamps in API responses use ISO-8601 UTC values.
+
 ## 📖 API Documentation
 
 Access the Interactive Swagger UI at:
@@ -75,6 +78,16 @@ Comprehensive endpoint details and data contracts are available at:
 - **Multi-Arch Support**: Images optimized for `amd64` and `arm64`.
 - **Zero-Qualified Names**: The codebase strictly uses imports.
 - **Null Safety**: Integrated **JSpecify** annotations.
+
+### Quality and coverage
+
+The coverage target is 100% line and branch coverage for behavior-bearing code.
+Tests should prove authorization, validation, persistence, and error behavior;
+they should not be added only to inflate a metric. Generated/data-only models
+and framework bootstrap glue are excluded consistently from JaCoCo and Sonar.
+Run `./mvnw clean verify` and inspect `target/site/jacoco/index.html` before
+requesting review. The detailed testing strategy is in
+[`docs/quality.md`](docs/quality.md).
 
 ## 🤖 CI/CD Pipeline
 
