@@ -21,6 +21,7 @@ package xyz.subho.clone.twitter.repository;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -44,4 +45,10 @@ public interface PostsRepository extends JpaRepository<Posts, UUID> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select p from Posts p where p.id = :id")
   Optional<Posts> findByIdForUpdate(@Param("id") UUID id);
+
+  @Query(
+      "select p from Posts p where "
+          + "(p.text is not null and lower(p.text) like lower(concat('%', :query, '%')) escape '\\')")
+  @NonNull Page<Posts> searchPosts(
+      @Param("query") @NonNull String query, @NonNull Pageable pageable);
 }

@@ -27,6 +27,7 @@ import xyz.subho.clone.twitter.entity.Users;
 import xyz.subho.clone.twitter.exception.BadRequestException;
 import xyz.subho.clone.twitter.model.PostModel;
 import xyz.subho.clone.twitter.model.UserModel;
+import xyz.subho.clone.twitter.model.UserSearchModel;
 
 class UtilityAndMapperTest {
 
@@ -131,5 +132,33 @@ class UtilityAndMapperTest {
                     PageRequest.of(0, 20, Sort.by("password")), "createdAt", "id"))
         .isInstanceOf(BadRequestException.class)
         .hasMessage("Unsupported sort property: password");
+  }
+
+  @Test
+  void userMapperToSearchModelMapsPublicFieldsAndOmitsSensitiveData() {
+    UserMapper mapper = Mappers.getMapper(UserMapper.class);
+    Users user = new Users();
+    UUID id = UUID.randomUUID();
+    user.setId(id);
+    user.setUsername("bob");
+    user.setName("Bob Jones");
+    user.setEmail("bob@example.com");
+    user.setPassword("secret123");
+    user.setBio("Hello world");
+    user.setAvatar("https://example.com/avatar.png");
+    user.setFollowerCount(42L);
+    user.setFollowingCount(10L);
+    user.setVerified(true);
+
+    UserSearchModel model = mapper.toSearchModel(user);
+
+    assertThat(model.id()).isEqualTo(id);
+    assertThat(model.username()).isEqualTo("bob");
+    assertThat(model.name()).isEqualTo("Bob Jones");
+    assertThat(model.bio()).isEqualTo("Hello world");
+    assertThat(model.avatar()).isEqualTo("https://example.com/avatar.png");
+    assertThat(model.followerCount()).isEqualTo(42L);
+    assertThat(model.followingCount()).isEqualTo(10L);
+    assertThat(model.verified()).isTrue();
   }
 }

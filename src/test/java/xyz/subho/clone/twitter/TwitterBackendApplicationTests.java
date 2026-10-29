@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.subho.clone.twitter.entity.HashtagPosts;
@@ -37,6 +38,7 @@ import xyz.subho.clone.twitter.repository.LikesRepository;
 import xyz.subho.clone.twitter.repository.PostsRepository;
 import xyz.subho.clone.twitter.repository.UsersRepository;
 import xyz.subho.clone.twitter.service.PostService;
+import xyz.subho.clone.twitter.service.SearchService;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -47,10 +49,33 @@ class TwitterBackendApplicationTests {
   @Autowired private LikesRepository likesRepository;
   @Autowired private PostsRepository postsRepository;
   @Autowired private PostService postService;
+  @Autowired private SearchService searchService;
   @Autowired private UsersRepository usersRepository;
 
   @Test
   void contextLoads() {}
+
+  @Test
+  @Transactional
+  void searchFindsUsersAndPostsCaseInsensitively() {
+    Users user = user("search-dev", "search-dev@example.com");
+    user.setBio("Passionate Spring Boot and Java Engineer");
+    usersRepository.saveAndFlush(user);
+
+    Posts post = new Posts();
+    post.setText("Hello world, this is a special #SpringFramework update!");
+    post.setUsers(user);
+    postsRepository.saveAndFlush(post);
+
+    var userResults = searchService.searchUsers("spring boot", PageRequest.of(0, 10));
+    assertThat(userResults.getContent()).extracting("username").contains("search-dev");
+
+    var userHandleResults = searchService.searchUsers("@search-dev", PageRequest.of(0, 10));
+    assertThat(userHandleResults.getContent()).extracting("username").contains("search-dev");
+
+    var postResults = searchService.searchPosts("SPRINGFRAMEWORK", PageRequest.of(0, 10));
+    assertThat(postResults.getContent()).extracting("text").contains(post.getText());
+  }
 
   @Test
   @Transactional
