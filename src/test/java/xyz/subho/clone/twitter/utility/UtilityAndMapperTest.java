@@ -39,6 +39,7 @@ class UtilityAndMapperTest {
     assertThat(utility.isUUID("bad")).isFalse();
     assertThat(utility.converStringToUUID(id.toString())).isEqualTo(id);
     assertThat(utility.converStringToUUID("bad")).isNull();
+    assertThat(utility.converStringToUUID(null)).isNull();
   }
 
   @Test
@@ -130,5 +131,12 @@ class UtilityAndMapperTest {
     assertThatThrownBy(() -> Utility.validatePageable(pageable, "createdAt", "id"))
         .isInstanceOf(BadRequestException.class)
         .hasMessage("Unsupported sort property: password");
+  }
+
+  @Test
+  void allowedSortPropertiesAndPageOffsetsPassValidation() {
+    var pageable = PageRequest.of(0, 20, Sort.by("createdAt", "id"));
+
+    Utility.validatePageable(pageable, "createdAt", "id");
   }
 }

@@ -11,6 +11,7 @@
 package xyz.subho.clone.twitter.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -27,6 +28,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import xyz.subho.clone.twitter.exception.BadRequestException;
+import xyz.subho.clone.twitter.exception.ResourceNotFoundException;
 import xyz.subho.clone.twitter.model.UserModel;
 import xyz.subho.clone.twitter.model.UserUpdateRequest;
 import xyz.subho.clone.twitter.service.UserService;
@@ -58,6 +61,23 @@ class UserControllerTest {
 
     assertThat(controller.getUserByUserIdOrUserName("@alice").getBody()).isEqualTo(user);
     assertThat(controller.getUserByUserIdOrUserName(otherId.toString()).getBody()).isEqualTo(user);
+  }
+
+  @Test
+  void lookupRejectsMalformedAndUnknownIdentities() {
+    when(utility.converStringToUUID("not-a-uuid")).thenReturn(null);
+    assertThrows(
+        BadRequestException.class, () -> controller.getUserByUserIdOrUserName("not-a-uuid"));
+
+    when(userService.getUserByUserName("missing")).thenReturn(null);
+    assertThrows(
+        ResourceNotFoundException.class, () -> controller.getUserByUserIdOrUserName("@missing"));
+
+    when(utility.converStringToUUID(otherId.toString())).thenReturn(otherId);
+    when(userService.getUserByUserId(otherId)).thenReturn(null);
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> controller.getUserByUserIdOrUserName(otherId.toString()));
   }
 
   @Test

@@ -152,6 +152,9 @@ class PostServiceImplTest {
     when(postsRepository.findByIdForUpdate(postId)).thenReturn(Optional.of(post));
     when(usersRepository.findById(userId)).thenReturn(Optional.empty());
     assertThrows(ResourceNotFoundException.class, () -> service.removeLike(postId, userId));
+
+    when(usersRepository.findById(userId)).thenReturn(Optional.empty());
+    assertThrows(ResourceNotFoundException.class, () -> service.addLike(postId, userId));
   }
 
   @Test
