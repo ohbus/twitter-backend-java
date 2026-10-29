@@ -20,6 +20,7 @@ package xyz.subho.clone.twitter.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
@@ -92,7 +93,8 @@ public class PostServiceImpl implements PostService {
     List<HashtagPosts> hashtagPosts = new ArrayList<>();
     validateReferencedPosts(postModel.originalPostId(), postModel.replyToId());
     var post = postMapper.toEntity(postModel);
-    post.setUsers(usersRepository.getReferenceById(postModel.userId()));
+    var userId = Objects.requireNonNull(postModel.userId(), "Post user ID is required");
+    post.setUsers(usersRepository.getReferenceById(userId));
     var savedPost = postsRepository.save(post);
     var hashtags = hashtagService.getHashtagsByTags(postModel.hashtags());
     hashtags.forEach(
