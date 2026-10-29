@@ -27,8 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class ApplicationErrorController extends BasicErrorController {
@@ -45,7 +44,7 @@ public class ApplicationErrorController extends BasicErrorController {
    * @param request HttpServletRequest
    * @return ResponseEntity for Errors
    */
-  @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Map<String, Object>> jsonError(HttpServletRequest request) {
 
     Map<String, Object> body =
