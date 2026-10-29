@@ -96,7 +96,9 @@ class JwtSecurityTest {
                         .getBytes(StandardCharsets.UTF_8)))
             .compact();
 
-    assertThat(jwtUtil(60_000L).validateToken(token, user)).isFalse();
+    JwtUtil jwtUtil = jwtUtil(60_000L);
+    assertThat(jwtUtil.validateToken(token, user)).isFalse();
+    assertThat(jwtUtil.extractExpiration(token)).isNull();
   }
 
   @Test

@@ -57,7 +57,8 @@ public class JwtUtil {
   }
 
   public Instant extractExpiration(String token) {
-    return extractClaim(token, Claims::getExpiration).toInstant();
+    var expiration = extractClaim(token, Claims::getExpiration);
+    return expiration == null ? null : expiration.toInstant();
   }
 
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
