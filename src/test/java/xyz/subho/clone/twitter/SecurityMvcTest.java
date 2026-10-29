@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,6 +41,8 @@ class SecurityMvcTest {
         .perform(
             patch(UserV1Constants.BASE_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
+                .cookie(csrfCookie())
+                .header("X-XSRF-TOKEN", "test-token")
                 .content(
                     "{\"name\":\"Alice\",\"email\":\"alice@example.com\",\"password\":\"password\"}"))
         .andExpect(status().isUnauthorized());
@@ -51,8 +54,24 @@ class SecurityMvcTest {
         .perform(
             post(AuthV1Constants.BASE_PATH + AuthV1Constants.REFRESH)
                 .contentType(MediaType.APPLICATION_JSON)
+                .cookie(csrfCookie())
+                .header("X-XSRF-TOKEN", "test-token")
                 .content("{\"refreshToken\":\"missing\"}"))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void stateChangingRequestsRequireCsrfToken() throws Exception {
+    mockMvc
+        .perform(
+            post(AuthV1Constants.BASE_PATH + AuthV1Constants.REFRESH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"refreshToken\":\"missing\"}"))
+        .andExpect(status().isForbidden());
+  }
+
+  private Cookie csrfCookie() {
+    return new Cookie("XSRF-TOKEN", "test-token");
   }
 
   @Test

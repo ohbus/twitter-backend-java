@@ -22,6 +22,7 @@ import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import java.security.Principal;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -88,7 +89,7 @@ public class PostController {
         new PostModel(
             null,
             postModel.text(),
-            user.id(),
+            Objects.requireNonNull(user.id()),
             postModel.images(),
             null,
             null,
@@ -110,7 +111,7 @@ public class PostController {
     if (user == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
-    postService.deletePost(postId, user.id());
+    postService.deletePost(postId, Objects.requireNonNull(user.id()));
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
@@ -122,7 +123,8 @@ public class PostController {
     if (user == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
-    return new ResponseEntity<>(postService.addLike(postId, user.id()), HttpStatus.CREATED);
+    return new ResponseEntity<>(
+        postService.addLike(postId, Objects.requireNonNull(user.id())), HttpStatus.CREATED);
   }
 
   @DeleteMapping(PostV1Constants.LIKE)
@@ -133,7 +135,8 @@ public class PostController {
     if (user == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
-    return new ResponseEntity<>(postService.removeLike(postId, user.id()), HttpStatus.OK);
+    return new ResponseEntity<>(
+        postService.removeLike(postId, Objects.requireNonNull(user.id())), HttpStatus.OK);
   }
 
   @GetMapping(PostV1Constants.REPLIES)

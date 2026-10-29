@@ -22,6 +22,7 @@ import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import java.security.Principal;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -85,7 +86,7 @@ public class AuthenticationController {
     if (user == null) {
       throw new BadRequestException("Incorrect username or password");
     }
-    var refreshToken = refreshTokenService.createRefreshToken(user.id());
+    var refreshToken = refreshTokenService.createRefreshToken(Objects.requireNonNull(user.id()));
 
     return ResponseEntity.ok(new AuthenticationResponse(jwt, refreshToken.getToken()));
   }
@@ -106,7 +107,7 @@ public class AuthenticationController {
     if (user == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
-    refreshTokenService.deleteByUserId(user.id());
+    refreshTokenService.deleteByUserId(Objects.requireNonNull(user.id()));
     return ResponseEntity.ok("Log out successful!");
   }
 }

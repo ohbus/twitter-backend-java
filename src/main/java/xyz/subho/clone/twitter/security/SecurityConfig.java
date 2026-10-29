@@ -18,6 +18,7 @@
 
 package xyz.subho.clone.twitter.security;
 
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,6 +31,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import xyz.subho.clone.twitter.constant.AuthV1Constants;
 import xyz.subho.clone.twitter.constant.UserV1Constants;
 
@@ -44,32 +47,42 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers(
-                        AuthV1Constants.BASE_PATH + AuthV1Constants.AUTHENTICATE,
-                        AuthV1Constants.BASE_PATH + AuthV1Constants.REFRESH,
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, UserV1Constants.BASE_PATH)
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, UserV1Constants.BASE_PATH + "/**")
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated())
-        .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(
-            exceptions ->
-                exceptions.authenticationEntryPoint(
-                    (request, response, exception) -> response.sendError(401)));
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    try {
+      var csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+      var csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
+      http.csrf(
+              csrf ->
+                  csrf.csrfTokenRepository(csrfTokenRepository)
+                      .csrfTokenRequestHandler(csrfTokenRequestHandler))
+          .authorizeHttpRequests(
+              auth ->
+                  auth.requestMatchers(
+                          AuthV1Constants.BASE_PATH + AuthV1Constants.AUTHENTICATE,
+                          AuthV1Constants.BASE_PATH + AuthV1Constants.REFRESH,
+                          "/swagger-ui/**",
+                          "/v3/api-docs/**")
+                      .permitAll()
+                      .requestMatchers(HttpMethod.POST, UserV1Constants.BASE_PATH)
+                      .permitAll()
+                      .requestMatchers(HttpMethod.GET, UserV1Constants.BASE_PATH + "/**")
+                      .permitAll()
+                      .anyRequest()
+                      .authenticated())
+          .sessionManagement(
+              session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+          .exceptionHandling(
+              exceptions ->
+                  exceptions.authenticationEntryPoint(
+                      (request, response, exception) -> response.sendError(401)));
 
-    http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+      http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
-    return http.build();
+      return http.build();
+    } catch (Exception exception) {
+      throw new BeanCreationException(
+          "Unable to build the application security filter chain", exception);
+    }
   }
 
   @Bean
@@ -79,7 +92,11 @@ public class SecurityConfig {
 
   @Bean
   public AuthenticationManager authenticationManager(
-      AuthenticationConfiguration authenticationConfiguration) throws Exception {
-    return authenticationConfiguration.getAuthenticationManager();
+      AuthenticationConfiguration authenticationConfiguration) {
+    try {
+      return authenticationConfiguration.getAuthenticationManager();
+    } catch (Exception exception) {
+      throw new BeanCreationException("Unable to create the authentication manager", exception);
+    }
   }
 }
