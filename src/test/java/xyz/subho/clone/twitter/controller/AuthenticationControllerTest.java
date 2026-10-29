@@ -82,10 +82,9 @@ class AuthenticationControllerTest {
   @Test
   void badCredentialsBecomeBadRequest() {
     when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("bad"));
+    AuthenticationRequest request = new AuthenticationRequest("alice", "bad");
 
-    assertThrows(
-        BadRequestException.class,
-        () -> controller.createAuthenticationToken(new AuthenticationRequest("alice", "bad")));
+    assertThrows(BadRequestException.class, () -> controller.createAuthenticationToken(request));
   }
 
   @Test
@@ -93,10 +92,9 @@ class AuthenticationControllerTest {
     when(userDetailsService.loadUserByUsername("alice"))
         .thenReturn(User.withUsername("alice").password("hash").build());
     when(userService.getUserByUserName("alice")).thenReturn(null);
+    AuthenticationRequest request = new AuthenticationRequest("alice", "password");
 
-    assertThrows(
-        BadRequestException.class,
-        () -> controller.createAuthenticationToken(new AuthenticationRequest("alice", "password")));
+    assertThrows(BadRequestException.class, () -> controller.createAuthenticationToken(request));
     verify(refreshTokenService, never()).createRefreshToken(any());
   }
 

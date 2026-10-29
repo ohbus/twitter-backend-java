@@ -88,7 +88,7 @@ class JwtSecurityTest {
     JwtUtil jwtUtil = jwtUtil(60_000L);
     ReflectionTestUtils.setField(jwtUtil, "secret", "too-short");
 
-    assertThatThrownBy(() -> jwtUtil.validateConfiguration())
+    assertThatThrownBy(jwtUtil::validateConfiguration)
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("jwt.secret must contain at least 32 UTF-8 bytes");
   }

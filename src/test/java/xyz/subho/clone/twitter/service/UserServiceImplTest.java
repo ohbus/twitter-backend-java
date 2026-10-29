@@ -125,12 +125,9 @@ class UserServiceImplTest {
   @Test
   void editUserRejectsUnknownUser() {
     when(usersRepository.findByUsernameForUpdate("missing")).thenReturn(null);
+    UserUpdateRequest request = new UserUpdateRequest("Name", "a@example.com", null, null, null);
 
-    assertThrows(
-        ResourceNotFoundException.class,
-        () ->
-            service.editUser(
-                "missing", new UserUpdateRequest("Name", "a@example.com", null, null, null)));
+    assertThrows(ResourceNotFoundException.class, () -> service.editUser("missing", request));
   }
 
   @Test

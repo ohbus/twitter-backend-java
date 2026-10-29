@@ -216,9 +216,9 @@ class PostServiceImplTest {
   @Test
   void repliesRejectAnUnknownParentPost() {
     when(postsRepository.existsById(postId)).thenReturn(false);
+    var pageable = PageRequest.of(0, 10);
 
-    assertThrows(
-        ResourceNotFoundException.class, () -> service.getReplies(postId, PageRequest.of(0, 10)));
+    assertThrows(ResourceNotFoundException.class, () -> service.getReplies(postId, pageable));
     verify(postsRepository, never()).findByReplyToId(any(), any());
   }
 

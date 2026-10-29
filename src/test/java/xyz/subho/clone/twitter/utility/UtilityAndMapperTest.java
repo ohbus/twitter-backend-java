@@ -118,17 +118,16 @@ class UtilityAndMapperTest {
 
   @Test
   void deepPageOffsetsAreRejectedBeforeQueryExecution() {
-    assertThatThrownBy(() -> Utility.validatePageable(PageRequest.of(101, 100), "createdAt", "id"))
+    var pageable = PageRequest.of(101, 100);
+    assertThatThrownBy(() -> Utility.validatePageable(pageable, "createdAt", "id"))
         .isInstanceOf(BadRequestException.class)
         .hasMessage("Page is too deep; use a smaller page number");
   }
 
   @Test
   void unsupportedSortPropertiesAreRejectedBeforeQueryExecution() {
-    assertThatThrownBy(
-            () ->
-                Utility.validatePageable(
-                    PageRequest.of(0, 20, Sort.by("password")), "createdAt", "id"))
+    var pageable = PageRequest.of(0, 20, Sort.by("password"));
+    assertThatThrownBy(() -> Utility.validatePageable(pageable, "createdAt", "id"))
         .isInstanceOf(BadRequestException.class)
         .hasMessage("Unsupported sort property: password");
   }
