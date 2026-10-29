@@ -60,6 +60,7 @@ public class SecurityConfig {
                   auth.requestMatchers(
                           AuthV1Constants.BASE_PATH + AuthV1Constants.AUTHENTICATE,
                           AuthV1Constants.BASE_PATH + AuthV1Constants.REFRESH,
+                          AuthV1Constants.BASE_PATH + AuthV1Constants.CSRF,
                           "/swagger-ui/**",
                           "/v3/api-docs/**")
                       .permitAll()

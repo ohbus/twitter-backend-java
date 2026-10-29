@@ -13,6 +13,7 @@ package xyz.subho.clone.twitter;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,6 +59,15 @@ class SecurityMvcTest {
                 .header("X-XSRF-TOKEN", "test-token")
                 .content("{\"refreshToken\":\"missing\"}"))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void csrfEndpointProvidesTokenAndCookieForStateChangingRequests() throws Exception {
+    mockMvc
+        .perform(get(AuthV1Constants.BASE_PATH + AuthV1Constants.CSRF))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").isString())
+        .andExpect(cookie().exists("XSRF-TOKEN"));
   }
 
   @Test

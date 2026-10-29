@@ -28,6 +28,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -89,6 +91,11 @@ public class AuthenticationController {
     var refreshToken = refreshTokenService.createRefreshToken(Objects.requireNonNull(user.id()));
 
     return ResponseEntity.ok(new AuthenticationResponse(jwt, refreshToken.getToken()));
+  }
+
+  @GetMapping(AuthV1Constants.CSRF)
+  public CsrfToken csrfToken(CsrfToken csrfToken) {
+    return csrfToken;
   }
 
   @PostMapping(AuthV1Constants.REFRESH)
