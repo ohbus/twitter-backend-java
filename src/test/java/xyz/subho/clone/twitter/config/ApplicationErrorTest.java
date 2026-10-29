@@ -14,6 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import jakarta.servlet.RequestDispatcher;
 import java.util.Map;
@@ -21,7 +24,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.webmvc.error.ErrorAttributes;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.request.ServletWebRequest;
 
 class ApplicationErrorTest {
@@ -57,5 +63,24 @@ class ApplicationErrorTest {
 
     assertThat(response.getStatusCode().value()).isEqualTo(404);
     assertThat(response.getBody()).containsEntry("cause", "Request failed");
+  }
+
+  @Test
+  void jsonErrorIsSelectedThroughMvcForJsonRequests() throws Exception {
+    ErrorAttributes errorAttributes = mock(ErrorAttributes.class);
+    when(errorAttributes.getErrorAttributes(any(), any()))
+        .thenReturn(Map.of("status", "404", "cause", "Request failed"));
+    MockMvc mockMvc =
+        MockMvcBuilders.standaloneSetup(
+                new ApplicationErrorController(errorAttributes, new WebProperties()))
+            .build();
+
+    mockMvc
+        .perform(
+            get("/error")
+                .accept(MediaType.APPLICATION_JSON)
+                .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 404))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.cause").value("Request failed"));
   }
 }
