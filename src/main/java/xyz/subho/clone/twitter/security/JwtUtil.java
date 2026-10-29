@@ -105,7 +105,7 @@ public class JwtUtil {
               && !tokenExpiration.toInstant().isBefore(Instant.now())
           ? username
           : null;
-    } catch (JwtException | IllegalArgumentException exception) {
+    } catch (JwtException | IllegalArgumentException _) {
       return null;
     }
   }

@@ -67,7 +67,8 @@ public class Posts extends Auditable {
   @CreatedBy
   private Users users;
 
-  @ElementCollection private Map<String, Instant> images = new HashMap<>(4); // maximum of 4 images
+  @ElementCollection
+  private Map<String, Instant> images = HashMap.newHashMap(4); // maximum of 4 images
 
   @Column(name = "like_count", nullable = false)
   private Long likeCount = 0L;
