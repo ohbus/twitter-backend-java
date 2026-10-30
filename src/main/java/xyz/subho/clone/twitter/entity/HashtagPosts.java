@@ -40,7 +40,7 @@ import java.util.UUID;
           columnList = "hashtags_id,created_at,id"),
       @Index(name = "idx_hashtag_posts_post_id", columnList = "posts_id")
     })
-public class HashtagPosts extends Auditable {
+public class HashtagPosts extends PostAssociation {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -54,14 +54,6 @@ public class HashtagPosts extends Auditable {
       updatable = false,
       nullable = false)
   private Hashtags hashtags;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(
-      name = "posts_id",
-      columnDefinition = "BINARY(16)",
-      updatable = false,
-      nullable = false)
-  private Posts posts;
 
   public UUID getId() {
     return id;
@@ -77,14 +69,6 @@ public class HashtagPosts extends Auditable {
 
   public void setHashtags(Hashtags hashtags) {
     this.hashtags = hashtags;
-  }
-
-  public Posts getPosts() {
-    return posts;
-  }
-
-  public void setPosts(Posts posts) {
-    this.posts = posts;
   }
 
   @Override
