@@ -22,6 +22,7 @@ import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import java.security.Principal;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -109,7 +110,7 @@ public class UserController {
     if (follower == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
-    userService.addFollower(follower.id(), userId);
+    userService.addFollower(Objects.requireNonNull(follower.id()), userId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
@@ -120,7 +121,7 @@ public class UserController {
     if (follower == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
-    userService.removeFollower(follower.id(), userId);
+    userService.removeFollower(Objects.requireNonNull(follower.id()), userId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 

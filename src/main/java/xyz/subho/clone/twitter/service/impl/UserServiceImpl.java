@@ -41,6 +41,8 @@ import xyz.subho.clone.twitter.utility.UserMapper;
 @Service
 public class UserServiceImpl implements UserService {
 
+  private static final String INVALID_USER_MESSAGE = "User is Invalid";
+
   private final UsersRepository usersRepository;
   private final FollowRepository followRepository;
   private final PasswordEncoder passwordEncoder;
@@ -84,7 +86,7 @@ public class UserServiceImpl implements UserService {
       @NonNull String username, @NonNull UserUpdateRequest userUpdateRequest) {
     Users users = usersRepository.findByUsernameForUpdate(username);
     if (users == null) {
-      throw new ResourceNotFoundException("User is Invalid");
+      throw new ResourceNotFoundException(INVALID_USER_MESSAGE);
     }
 
     users.setName(userUpdateRequest.name());
@@ -104,7 +106,7 @@ public class UserServiceImpl implements UserService {
     if (followerId.equals(userId)) {
       throw new BadRequestException("You cannot follow yourself");
     }
-    Users first = lockUser(firstId(followerId, userId), "User is Invalid");
+    Users first = lockUser(firstId(followerId, userId), INVALID_USER_MESSAGE);
     Users second = lockUser(secondId(followerId, userId), "Follower is Invalid");
     Users user = userId.equals(first.getId()) ? first : second;
     Users follower = followerId.equals(first.getId()) ? first : second;
@@ -129,7 +131,7 @@ public class UserServiceImpl implements UserService {
     if (followerId.equals(userId)) {
       throw new BadRequestException("You cannot unfollow yourself");
     }
-    Users first = lockUser(firstId(followerId, userId), "User is Invalid");
+    Users first = lockUser(firstId(followerId, userId), INVALID_USER_MESSAGE);
     Users second = lockUser(secondId(followerId, userId), "Follower is Invalid");
     Users user = userId.equals(first.getId()) ? first : second;
     Users follower = followerId.equals(first.getId()) ? first : second;
@@ -167,7 +169,7 @@ public class UserServiceImpl implements UserService {
     Users user =
         usersRepository
             .findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User is Invalid"));
+            .orElseThrow(() -> new ResourceNotFoundException(INVALID_USER_MESSAGE));
     var followsPage = followRepository.findByFollowing(user, pageable);
     return followsPage.map(f -> userMapper.toModel(f.getFollower()));
   }
@@ -178,7 +180,7 @@ public class UserServiceImpl implements UserService {
     Users user =
         usersRepository
             .findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User is Invalid"));
+            .orElseThrow(() -> new ResourceNotFoundException(INVALID_USER_MESSAGE));
     var followsPage = followRepository.findByFollower(user, pageable);
     return followsPage.map(f -> userMapper.toModel(f.getFollowing()));
   }

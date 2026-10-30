@@ -129,12 +129,10 @@ To keep the codebase clean and stable, we enforce the following rules:
 To respect the time of our maintainers, a Pull Request will **not** be
 reviewed until the following conditions are met:
 
-- **DCO Compliance:** Every commit must be signed-off (`git commit -s`).
+- **Commit Signing:** GPG signing is recommended when configured; `Signed-off-by`
+  trailers are not required.
 - **Green CI:** The `PR Checker` workflow must pass successfully on GitHub.
 - **No Conflicts:** The PR must be rebased against the latest `master`.
-
-If your PR is missing sign-offs, you can fix it using:
-`git rebase HEAD~N --signoff` (where N is the number of commits).
 
 ### 2. Implementation Steps
 

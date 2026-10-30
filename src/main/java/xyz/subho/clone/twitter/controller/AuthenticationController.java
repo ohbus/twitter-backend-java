@@ -22,11 +22,14 @@ import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import java.security.Principal;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,9 +88,14 @@ public class AuthenticationController {
     if (user == null) {
       throw new BadRequestException("Incorrect username or password");
     }
-    var refreshToken = refreshTokenService.createRefreshToken(user.id());
+    var refreshToken = refreshTokenService.createRefreshToken(Objects.requireNonNull(user.id()));
 
     return ResponseEntity.ok(new AuthenticationResponse(jwt, refreshToken.getToken()));
+  }
+
+  @GetMapping(AuthV1Constants.CSRF)
+  public CsrfToken csrfToken(CsrfToken csrfToken) {
+    return csrfToken;
   }
 
   @PostMapping(AuthV1Constants.REFRESH)
@@ -106,7 +114,7 @@ public class AuthenticationController {
     if (user == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
-    refreshTokenService.deleteByUserId(user.id());
+    refreshTokenService.deleteByUserId(Objects.requireNonNull(user.id()));
     return ResponseEntity.ok("Log out successful!");
   }
 }

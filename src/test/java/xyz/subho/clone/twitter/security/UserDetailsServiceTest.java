@@ -39,9 +39,8 @@ class UserDetailsServiceTest {
   void missingUserIsRejected() {
     UsersRepository repository = mock(UsersRepository.class);
     when(repository.findByUsername("missing")).thenReturn(null);
+    UserDetailsServiceImpl service = new UserDetailsServiceImpl(repository);
 
-    assertThrows(
-        UsernameNotFoundException.class,
-        () -> new UserDetailsServiceImpl(repository).loadUserByUsername("missing"));
+    assertThrows(UsernameNotFoundException.class, () -> service.loadUserByUsername("missing"));
   }
 }

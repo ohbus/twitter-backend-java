@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import jakarta.validation.Validation;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,15 +39,16 @@ class UtilityAndMapperTest {
     assertThat(utility.isUUID("bad")).isFalse();
     assertThat(utility.converStringToUUID(id.toString())).isEqualTo(id);
     assertThat(utility.converStringToUUID("bad")).isNull();
+    assertThat(utility.converStringToUUID(null)).isNull();
   }
 
   @Test
   void postMapperHandlesNullAndNonNullCollections() {
     PostMapper mapper = Mappers.getMapper(PostMapper.class);
     assertThat(mapper.mapToKeysList(null)).isEmpty();
-    assertThat(mapper.mapToKeysList(Map.of("java", new Date()))).containsExactly("java");
-    assertThat(mapper.listToDateMap(null)).isEmpty();
-    assertThat(mapper.listToDateMap(List.of("java"))).containsKey("java");
+    assertThat(mapper.mapToKeysList(Map.of("java", Instant.now()))).containsExactly("java");
+    assertThat(mapper.listToInstantMap(null)).isEmpty();
+    assertThat(mapper.listToInstantMap(List.of("java"))).containsKey("java");
   }
 
   @Test
@@ -118,18 +119,24 @@ class UtilityAndMapperTest {
 
   @Test
   void deepPageOffsetsAreRejectedBeforeQueryExecution() {
-    assertThatThrownBy(() -> Utility.validatePageable(PageRequest.of(101, 100), "createdAt", "id"))
+    var pageable = PageRequest.of(101, 100);
+    assertThatThrownBy(() -> Utility.validatePageable(pageable, "createdAt", "id"))
         .isInstanceOf(BadRequestException.class)
         .hasMessage("Page is too deep; use a smaller page number");
   }
 
   @Test
   void unsupportedSortPropertiesAreRejectedBeforeQueryExecution() {
-    assertThatThrownBy(
-            () ->
-                Utility.validatePageable(
-                    PageRequest.of(0, 20, Sort.by("password")), "createdAt", "id"))
+    var pageable = PageRequest.of(0, 20, Sort.by("password"));
+    assertThatThrownBy(() -> Utility.validatePageable(pageable, "createdAt", "id"))
         .isInstanceOf(BadRequestException.class)
         .hasMessage("Unsupported sort property: password");
+  }
+
+  @Test
+  void allowedSortPropertiesAndPageOffsetsPassValidation() {
+    var pageable = PageRequest.of(0, 20, Sort.by("createdAt", "id"));
+
+    Utility.validatePageable(pageable, "createdAt", "id");
   }
 }

@@ -30,6 +30,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import xyz.subho.clone.twitter.constant.AuthV1Constants;
 import xyz.subho.clone.twitter.constant.UserV1Constants;
 
@@ -44,13 +46,20 @@ public class SecurityConfig {
   }
 
   @Bean
+  @SuppressWarnings("java:S3330") // Browser JavaScript must read the CSRF double-submit token.
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
+    var csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+    var csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
+    http.csrf(
+            csrf ->
+                csrf.csrfTokenRepository(csrfTokenRepository)
+                    .csrfTokenRequestHandler(csrfTokenRequestHandler))
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
                         AuthV1Constants.BASE_PATH + AuthV1Constants.AUTHENTICATE,
                         AuthV1Constants.BASE_PATH + AuthV1Constants.REFRESH,
+                        AuthV1Constants.BASE_PATH + AuthV1Constants.CSRF,
                         "/swagger-ui/**",
                         "/v3/api-docs/**")
                     .permitAll()

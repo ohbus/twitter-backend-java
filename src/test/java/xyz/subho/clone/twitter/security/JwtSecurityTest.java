@@ -23,6 +23,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -50,10 +51,11 @@ class JwtSecurityTest {
     String token = jwtUtil.generateToken(user);
 
     assertThat(jwtUtil.extractUsername(token)).isEqualTo("alice");
-    assertThat(jwtUtil.extractExpiration(token)).isAfter(new Date());
+    assertThat(jwtUtil.extractExpiration(token)).isAfter(Instant.now());
     assertThat(jwtUtil.validateToken(token, user)).isTrue();
     assertThat(jwtUtil.validateToken(token, User.withUsername("bob").password("hash").build()))
         .isFalse();
+    assertThat(jwtUtil.validateToken(token)).isTrue();
   }
 
   @Test
@@ -65,6 +67,7 @@ class JwtSecurityTest {
     JwtUtil jwtUtil = jwtUtil(60_000L);
     assertThrows(JwtException.class, () -> jwtUtil.extractUsername("not-a-jwt"));
     assertThat(jwtUtil.validateToken("not-a-jwt", user)).isFalse();
+    assertThat(jwtUtil.validateToken("not-a-jwt")).isFalse();
   }
 
   @Test
@@ -83,13 +86,63 @@ class JwtSecurityTest {
   }
 
   @Test
+  void tokenWithoutAnExpiryIsRejectedWithoutThrowing() {
+    String token =
+        Jwts.builder()
+            .subject("alice")
+            .signWith(
+                Keys.hmacShaKeyFor(
+                    "test-only-secret-that-is-at-least-32-characters-long"
+                        .getBytes(StandardCharsets.UTF_8)))
+            .compact();
+
+    JwtUtil jwtUtil = jwtUtil(60_000L);
+    assertThat(jwtUtil.validateToken(token, user)).isFalse();
+    assertThat(jwtUtil.extractExpiration(token)).isNull();
+  }
+
+  @Test
+  void tokenWithAnEmptySubjectIsStillParsedSafely() {
+    String token =
+        Jwts.builder()
+            .subject("")
+            .expiration(new Date(System.currentTimeMillis() + 60_000L))
+            .signWith(
+                Keys.hmacShaKeyFor(
+                    "test-only-secret-that-is-at-least-32-characters-long"
+                        .getBytes(StandardCharsets.UTF_8)))
+            .compact();
+
+    assertThat(jwtUtil(60_000L).validateToken(token)).isFalse();
+  }
+
+  @Test
   void weakJwtConfigurationFailsFast() {
     JwtUtil jwtUtil = jwtUtil(60_000L);
     ReflectionTestUtils.setField(jwtUtil, "secret", "too-short");
 
-    assertThatThrownBy(() -> jwtUtil.validateConfiguration())
+    assertThatThrownBy(jwtUtil::validateConfiguration)
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("jwt.secret must contain at least 32 UTF-8 bytes");
+
+    ReflectionTestUtils.setField(jwtUtil, "secret", null);
+    assertThatThrownBy(jwtUtil::validateConfiguration)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("jwt.secret must contain at least 32 UTF-8 bytes");
+  }
+
+  @Test
+  void missingOrNonPositiveJwtExpirationFailsFast() {
+    JwtUtil jwtUtil = jwtUtil(60_000L);
+    ReflectionTestUtils.setField(jwtUtil, "expiration", null);
+    assertThatThrownBy(jwtUtil::validateConfiguration)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("jwt.expiration must be positive");
+
+    ReflectionTestUtils.setField(jwtUtil, "expiration", 0L);
+    assertThatThrownBy(jwtUtil::validateConfiguration)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("jwt.expiration must be positive");
   }
 
   @Test
@@ -145,7 +198,7 @@ class JwtSecurityTest {
       throws Exception {
     JwtUtil jwtUtil = mock(JwtUtil.class);
     FilterChain chain = mock(FilterChain.class);
-    when(jwtUtil.validateAndExtractUsername("invalid")).thenReturn(null);
+    when(jwtUtil.validateAndExtractUsername("invalid")).thenReturn(null, "alice");
     JwtRequestFilter filter = new JwtRequestFilter(jwtUtil);
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.addHeader("Authorization", "Bearer invalid");

@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.subho.clone.twitter.entity.RefreshToken;
+import xyz.subho.clone.twitter.entity.Users;
 import xyz.subho.clone.twitter.exception.BadRequestException;
 import xyz.subho.clone.twitter.exception.ResourceNotFoundException;
 import xyz.subho.clone.twitter.repository.RefreshTokenRepository;
@@ -66,7 +67,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             .findByIdForUpdate(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User is Invalid"));
 
-    // Clean up existing tokens for the user
+    return createRefreshTokenForUser(user);
+  }
+
+  private RefreshToken createRefreshTokenForUser(Users user) {
     refreshTokenRepository.deleteByUsers(user);
     refreshTokenRepository.flush();
 
@@ -100,9 +104,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         usersRepository
             .findByIdForUpdate(currentToken.getUsers().getId())
             .orElseThrow(() -> new ResourceNotFoundException("User is Invalid"));
-    refreshTokenRepository.deleteByUsers(user);
-    refreshTokenRepository.flush();
-    return createRefreshToken(user.getId());
+    return createRefreshTokenForUser(user);
   }
 
   @Override

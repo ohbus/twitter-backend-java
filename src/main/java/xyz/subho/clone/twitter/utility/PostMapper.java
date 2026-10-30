@@ -18,8 +18,8 @@
 
 package xyz.subho.clone.twitter.utility;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,22 +47,22 @@ public interface PostMapper {
   @Mapping(target = "postLikes", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
-  @Mapping(target = "hashtags", source = "hashtags", qualifiedByName = "listToDateMap")
-  @Mapping(target = "mentions", source = "mentions", qualifiedByName = "listToDateMap")
-  @Mapping(target = "images", source = "images", qualifiedByName = "listToDateMap")
+  @Mapping(target = "hashtags", source = "hashtags", qualifiedByName = "listToInstantMap")
+  @Mapping(target = "mentions", source = "mentions", qualifiedByName = "listToInstantMap")
+  @Mapping(target = "images", source = "images", qualifiedByName = "listToInstantMap")
   Posts toEntity(PostModel postModel);
 
   @Named("mapToKeysList")
-  default List<String> mapToKeysList(Map<String, Date> map) {
+  default List<String> mapToKeysList(Map<String, Instant> map) {
     if (map == null) return new ArrayList<>();
     return new ArrayList<>(map.keySet());
   }
 
-  @Named("listToDateMap")
-  default Map<String, Date> listToDateMap(List<String> list) {
-    Map<String, Date> map = new HashMap<>();
+  @Named("listToInstantMap")
+  default Map<String, Instant> listToInstantMap(List<String> list) {
+    Map<String, Instant> map = new HashMap<>();
     if (list != null) {
-      list.forEach(item -> map.put(item, new Date()));
+      list.forEach(item -> map.put(item, Instant.now()));
     }
     return map;
   }

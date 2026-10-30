@@ -63,7 +63,7 @@ public class Utility {
     }
     try {
       return UUID.fromString(uuid);
-    } catch (IllegalArgumentException exception) {
+    } catch (IllegalArgumentException _) {
       return null;
     }
   }

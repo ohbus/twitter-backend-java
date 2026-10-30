@@ -30,6 +30,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import xyz.subho.clone.twitter.entity.RefreshToken;
 import xyz.subho.clone.twitter.entity.Users;
 import xyz.subho.clone.twitter.exception.BadRequestException;
+import xyz.subho.clone.twitter.exception.ResourceNotFoundException;
 import xyz.subho.clone.twitter.repository.RefreshTokenRepository;
 import xyz.subho.clone.twitter.repository.UsersRepository;
 import xyz.subho.clone.twitter.service.impl.RefreshTokenServiceImpl;
@@ -67,6 +68,13 @@ class RefreshTokenServiceImplTest {
   }
 
   @Test
+  void creatingForAnUnknownUserIsRejected() {
+    when(usersRepository.findByIdForUpdate(userId)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.createRefreshToken(userId));
+  }
+
+  @Test
   void expiredTokensAreDeletedAndRejected() {
     RefreshToken token = token(Instant.now().minusSeconds(1));
     when(refreshTokenRepository.findByTokenForUpdate(any())).thenReturn(Optional.of(token));
@@ -90,6 +98,17 @@ class RefreshTokenServiceImplTest {
     assertThat(replacement.getToken()).isNotEqualTo(current.getToken());
     verify(refreshTokenRepository, atLeastOnce()).deleteByUsers(user);
     verify(refreshTokenRepository, atLeastOnce()).flush();
+  }
+
+  @Test
+  void rotationRejectsTokensForDeletedUsers() {
+    Users user = user();
+    RefreshToken current = token(Instant.now().plusSeconds(60));
+    current.setUsers(user);
+    when(refreshTokenRepository.findByTokenForUpdate(any())).thenReturn(Optional.of(current));
+    when(usersRepository.findByIdForUpdate(userId)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.rotateRefreshToken("old"));
   }
 
   @Test
@@ -118,12 +137,28 @@ class RefreshTokenServiceImplTest {
   }
 
   @Test
+  void missingRefreshDurationFailsFast() {
+    ReflectionTestUtils.setField(service, "refreshTokenDurationMs", null);
+
+    assertThrows(
+        IllegalStateException.class,
+        () -> ReflectionTestUtils.invokeMethod(service, "validateConfiguration"));
+  }
+
+  @Test
   void logoutDelegatesToRepository() {
     Users user = user();
     when(usersRepository.findByIdForUpdate(userId)).thenReturn(Optional.of(user));
     when(refreshTokenRepository.deleteByUsers(user)).thenReturn(1);
 
     assertThat(service.deleteByUserId(userId)).isEqualTo(1);
+  }
+
+  @Test
+  void logoutForAnUnknownUserIsANoOp() {
+    when(usersRepository.findByIdForUpdate(userId)).thenReturn(Optional.empty());
+
+    assertThat(service.deleteByUserId(userId)).isZero();
   }
 
   private Users user() {

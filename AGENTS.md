@@ -39,10 +39,11 @@ Use `mvnw jacoco:report` to inspect coverage changes.
 ## Commit & Pull Request Guidelines
 
 Use concise Conventional Commit subjects such as `feat:`, `fix:`, `docs:`, or
-`chore:`. Sign commits with `git commit -s`. Before requesting review, rebase
-onto `master`, ensure PR Checker is green, update Swagger/OpenAPI metadata for
-API changes, remove debug logs/TODOs, and include a focused description plus
-linked issue context where applicable.
+`chore:`. Use GPG signing when configured (`git commit -S` or
+`commit.gpgsign=true`); do not add `Signed-off-by` trailers by default. Before
+requesting review, rebase onto `master`, ensure PR Checker is green, update
+Swagger/OpenAPI metadata for API changes, remove debug logs/TODOs, and include
+a focused description plus linked issue context where applicable.
 
 ## Security & Configuration
 

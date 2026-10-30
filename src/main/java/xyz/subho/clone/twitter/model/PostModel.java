@@ -20,8 +20,8 @@ package xyz.subho.clone.twitter.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -37,7 +37,7 @@ public record PostModel(
     @Nullable Long repostCount,
     @Nullable UUID originalPostId,
     @Nullable UUID replyToId,
-    @Nullable Date timestamp,
+    @Nullable Instant timestamp,
     @Size(max = 20) List<@NotBlank @Size(max = 50) String> hashtags,
     @Size(max = 20) List<@NotBlank @Size(max = 50) String> mentions) {
 
