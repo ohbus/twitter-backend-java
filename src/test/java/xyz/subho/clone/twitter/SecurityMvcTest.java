@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import jakarta.servlet.http.Cookie;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +26,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import xyz.subho.clone.twitter.constant.AuthV1Constants;
 import xyz.subho.clone.twitter.constant.PostV1Constants;
 import xyz.subho.clone.twitter.constant.UserV1Constants;
@@ -63,11 +65,23 @@ class SecurityMvcTest {
 
   @Test
   void csrfEndpointProvidesTokenAndCookieForStateChangingRequests() throws Exception {
+    MvcResult csrfResult =
+        mockMvc
+            .perform(get(AuthV1Constants.BASE_PATH + AuthV1Constants.CSRF))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token").isString())
+            .andExpect(cookie().exists("XSRF-TOKEN"))
+            .andReturn();
+    Cookie csrfCookie = Objects.requireNonNull(csrfResult.getResponse().getCookie("XSRF-TOKEN"));
+
     mockMvc
-        .perform(get(AuthV1Constants.BASE_PATH + AuthV1Constants.CSRF))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.token").isString())
-        .andExpect(cookie().exists("XSRF-TOKEN"));
+        .perform(
+            post(AuthV1Constants.BASE_PATH + AuthV1Constants.REFRESH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(csrfCookie)
+                .header("X-XSRF-TOKEN", csrfCookie.getValue())
+                .content("{\"refreshToken\":\"missing\"}"))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

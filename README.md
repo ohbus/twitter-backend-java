@@ -57,7 +57,7 @@ Ideal for coding. Runs DB in Docker, App in your IDE/CLI.
 For advanced configuration, visit [Project Configuration](https://github.com/scaleracademy/twitter-backend-java/wiki/Project-Configuration).
 
 State-changing requests require the `XSRF-TOKEN` cookie value in the
-`X-XSRF-TOKEN` header, including public POST endpoints. Call `GET /v1/auth/csrf`
+`X-XSRF-TOKEN` header, including public POST endpoints. Call `GET /v1/csrf`
 first to receive the token and set the cookie; authenticated requests also need
 JWT authentication. Timestamps in API responses use ISO-8601 UTC values.
 
