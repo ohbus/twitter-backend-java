@@ -168,6 +168,7 @@ jobs:
             -Dsonar.java.libraries=target/sonar-libraries/**/*.jar
             -Dsonar.java.test.libraries=target/sonar-libraries/**/*.jar
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.exclusions=**/entity/**,**/model/**,**/*MapperImpl*,**/TwitterBackendApplication*,**/*MockitoMock*,**/*$auxiliary$*
             -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

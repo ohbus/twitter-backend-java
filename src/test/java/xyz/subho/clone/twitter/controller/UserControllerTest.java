@@ -65,6 +65,7 @@ class UserControllerTest {
 
   @Test
   void lookupRejectsMalformedAndUnknownIdentities() {
+    String otherIdString = otherId.toString();
     when(utility.converStringToUUID("not-a-uuid")).thenReturn(null);
     assertThrows(
         BadRequestException.class, () -> controller.getUserByUserIdOrUserName("not-a-uuid"));
@@ -73,11 +74,10 @@ class UserControllerTest {
     assertThrows(
         ResourceNotFoundException.class, () -> controller.getUserByUserIdOrUserName("@missing"));
 
-    when(utility.converStringToUUID(otherId.toString())).thenReturn(otherId);
+    when(utility.converStringToUUID(otherIdString)).thenReturn(otherId);
     when(userService.getUserByUserId(otherId)).thenReturn(null);
     assertThrows(
-        ResourceNotFoundException.class,
-        () -> controller.getUserByUserIdOrUserName(otherId.toString()));
+        ResourceNotFoundException.class, () -> controller.getUserByUserIdOrUserName(otherIdString));
   }
 
   @Test

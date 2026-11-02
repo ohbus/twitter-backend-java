@@ -47,7 +47,7 @@ public class SecurityConfig {
 
   @Bean
   @SuppressWarnings("java:S3330") // Browser JavaScript must read the CSRF double-submit token.
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
     var csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
     var csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
     http.csrf(
@@ -88,7 +88,7 @@ public class SecurityConfig {
 
   @Bean
   public AuthenticationManager authenticationManager(
-      AuthenticationConfiguration authenticationConfiguration) throws Exception {
+      AuthenticationConfiguration authenticationConfiguration) {
     return authenticationConfiguration.getAuthenticationManager();
   }
 }

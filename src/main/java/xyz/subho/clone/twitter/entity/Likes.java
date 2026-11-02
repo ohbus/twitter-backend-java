@@ -37,7 +37,7 @@ import java.util.UUID;
     name = "likes",
     uniqueConstraints = {@UniqueConstraint(columnNames = {"users_id", "posts_id"})},
     indexes = {@Index(name = "idx_likes_posts_id", columnList = "posts_id")})
-public class Likes extends Auditable {
+public class Likes extends PostAssociation {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -51,14 +51,6 @@ public class Likes extends Auditable {
       updatable = false,
       nullable = false)
   private Users users;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(
-      name = "posts_id",
-      columnDefinition = "BINARY(16)",
-      updatable = false,
-      nullable = false)
-  private Posts posts;
 
   public UUID getId() {
     return id;
@@ -74,14 +66,6 @@ public class Likes extends Auditable {
 
   public void setUsers(Users users) {
     this.users = users;
-  }
-
-  public Posts getPosts() {
-    return posts;
-  }
-
-  public void setPosts(Posts posts) {
-    this.posts = posts;
   }
 
   @Override
