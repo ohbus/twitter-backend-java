@@ -38,7 +38,6 @@ import java.util.UUID;
 @Table(
     name = "users",
     indexes = {
-      @Index(name = "idx_users_username", columnList = "username"),
       @Index(name = "idx_users_name", columnList = "name"),
       @Index(name = "idx_users_bio", columnList = "bio")
     })
