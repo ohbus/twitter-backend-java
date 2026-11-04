@@ -57,6 +57,8 @@ Compose reads `.env`, but Maven does not. An existing `moo-data` volume keeps
 the root password used when it was first created. In that case, export that
 password as `SPRING_DATASOURCE_PASSWORD` instead of `root`; do not delete the
 volume or expect changing `DB_ROOT_PASS` to update it.
+If you need data created by the former native profile, use
+`export DB_NAME=twitter` before starting Maven.
 
 The native API defaults to `http://localhost:8080`.
 

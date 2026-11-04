@@ -61,6 +61,8 @@ export SPRING_DATASOURCE_PASSWORD=root
 Compose reads `.env`, but Maven does not. For an existing `moo-data` volume,
 set `SPRING_DATASOURCE_PASSWORD` to the root password used when that volume was
 first created; changing `DB_ROOT_PASS` does not update an existing database.
+If you need data created by the former native profile, use
+`export DB_NAME=twitter` before starting Maven.
 
 The native API is available at `http://localhost:8080`. Swagger UI is at
 `/swagger-ui/index.html` outside production.
