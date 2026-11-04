@@ -1,3 +1,8 @@
+---
+title: Quality, coverage, and CI
+description: Understand Moo testing, formatting, coverage, analysis, and delivery checks.
+---
+
 # Quality and coverage strategy
 
 The target is 100% line and branch coverage for code that makes a product or

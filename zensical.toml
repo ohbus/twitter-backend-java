@@ -1,0 +1,116 @@
+[project]
+site_name = "Moo Twitter Backend"
+site_url = "https://subho.xyz/twitter-backend-java/"
+site_description = "Architecture, API, development, and contribution documentation for the Moo Twitter clone backend."
+site_author = "Subhrodip Mohanta and contributors"
+copyright = "Copyright © 2021-2026 Subhrodip Mohanta and contributors"
+repo_url = "https://github.com/ohbus/twitter-backend-java"
+repo_name = "ohbus/twitter-backend-java"
+edit_uri = "edit/master/docs/"
+docs_dir = "docs"
+site_dir = "site"
+exclude_docs = """
+tooling/
+"""
+nav = [
+  { "Home" = "README.md" },
+  { "Getting started" = [
+    "getting-started/README.md",
+    "getting-started/installation.md",
+    "getting-started/configuration.md",
+    "getting-started/development.md",
+  ] },
+  { "Architecture" = [
+    "architecture/README.md",
+    "architecture/technology.md",
+    "architecture/data-model.md",
+  ] },
+  { "API" = [
+    "api/README.md",
+    "api/authentication.md",
+    "api/endpoints.md",
+    "api/models.md",
+    "api/testing.md",
+    "api/reference.md",
+  ] },
+  { "Quality" = "quality.md" },
+  { "Contributing" = [
+    "contributing/README.md",
+    "contributing/workflow.md",
+    "contributing/issues-and-reviews.md",
+  ] },
+  { "Project" = [
+    "project/README.md",
+    "project/roadmap.md",
+    "project/support.md",
+  ] },
+]
+
+[project.theme]
+variant = "modern"
+language = "en"
+features = [
+  "content.action.edit",
+  "content.action.view",
+  "content.code.copy",
+  "content.action.copy",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.tabs",
+  "navigation.top",
+  "toc.follow",
+]
+
+[project.theme.icon]
+logo = "material/cow"
+repo = "fontawesome/brands/github"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "blue"
+accent = "light blue"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "blue"
+accent = "light blue"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[project.plugins.search]
+
+[project.plugins.social]
+
+[project.plugins.llmstxt]
+markdown_description = "Use these Markdown documents to understand, run, integrate with, and contribute to Moo."
+full_output = "llms-full.txt"
+
+[project.plugins.llmstxt.sections]
+"Overview" = ["README.md", "architecture/*.md"]
+"Using the project" = ["getting-started/*.md", "api/*.md"]
+"Contributing" = ["quality.md", "contributing/*.md", "project/*.md"]
+
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+md_in_html = {}
+pymdownx.details = {}
+pymdownx.highlight = { anchor_linenums = true }
+pymdownx.inlinehilite = {}
+pymdownx.snippets = {}
+pymdownx.tabbed = { alternate_style = true }
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+toc = { permalink = true }
