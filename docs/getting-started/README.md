@@ -9,7 +9,7 @@ Choose the smallest setup that matches your task:
 
 | Goal | Setup |
 | --- | --- |
-| Try the complete stack | `docker compose up -d` |
+| Try the complete stack | Configure `.env`, build the JAR, then run `docker compose up -d` |
 | Develop the backend | Start dependencies with `docker-compose.dev.yml`, then run Maven |
 | Run automated checks | `./mvnw clean verify` |
 

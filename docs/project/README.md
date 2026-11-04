@@ -11,7 +11,7 @@ Project planning stays in GitHub so status is never copied into stale pages.
 - [Milestones](https://github.com/ohbus/twitter-backend-java/milestones)
 - [Releases](https://github.com/ohbus/twitter-backend-java/releases)
 - [Changelog](https://github.com/ohbus/twitter-backend-java/blob/master/CHANGELOG.md)
-- [Security policy](https://github.com/ohbus/twitter-backend-java/security)
+- [Security policy](https://github.com/ohbus/twitter-backend-java/blob/master/SECURITY.md)
 
 ## In this section
 

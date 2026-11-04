@@ -21,11 +21,13 @@ cd twitter-backend-java
 cp .env.example .env
 ```
 
-The example values are for local development only. Never commit real secrets.
+Set `DB_USER`, `DB_PASS`, `DB_ROOT_PASS`, and `JWT_SECRET` to non-empty values
+in `.env`. Never commit real secrets.
 
 ## Run the full stack
 
 ```bash
+./mvnw clean verify
 docker compose up -d
 ```
 
@@ -37,6 +39,8 @@ The Compose stack exposes the API on `http://localhost:8082` and Adminer on
 Start only the development dependencies:
 
 ```bash
+# The dev profile connects as root/root.
+# Set DB_ROOT_PASS=root and set DB_USER and DB_PASS to non-empty values in .env.
 docker compose -f docker-compose.dev.yml up -d
 ```
 

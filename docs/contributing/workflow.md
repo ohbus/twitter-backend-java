@@ -28,8 +28,9 @@ Use a concise Conventional Commit subject such as `fix:`, `feat:`, `docs:`, or
 Before review:
 
 ```bash
-git fetch origin
-git rebase origin/master
+git remote add upstream https://github.com/ohbus/twitter-backend-java.git # once
+git fetch upstream
+git rebase upstream/master
 ```
 
 Do not force-push shared branches. A contributor may use

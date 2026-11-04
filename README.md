@@ -37,6 +37,8 @@ describes.
 
 ```bash
 cp .env.example .env
+# Set DB_USER, DB_PASS, DB_ROOT_PASS, and JWT_SECRET to non-empty values in .env.
+./mvnw clean verify
 docker compose up -d
 ```
 
@@ -47,6 +49,7 @@ The API is available at `http://localhost:8082` and Adminer at
 
 ```bash
 cp .env.example .env
+# Set DB_USER and DB_PASS to non-empty values and DB_ROOT_PASS=root in .env.
 docker compose -f docker-compose.dev.yml up -d
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```

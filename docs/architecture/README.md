@@ -11,9 +11,11 @@ model records define the public API.
 
 ```mermaid
 flowchart TD
-    Request --> JwtRequestFilter
-    JwtRequestFilter --> SecurityFilterChain
-    SecurityFilterChain --> Controllers
+    Request --> Chain
+    subgraph Chain[SecurityFilterChain]
+        JwtRequestFilter --> UsernamePasswordAuthenticationFilter
+    end
+    Chain --> Controllers
     Controllers --> Services
     Services --> Repositories
     Repositories --> Entities
