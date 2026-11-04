@@ -100,22 +100,22 @@ public class OpenApiConfig {
                     pathItem
                         .readOperationsMap()
                         .forEach(
-                            (method, operation) -> {
-                              boolean write = method != PathItem.HttpMethod.GET;
-                              boolean publicOperation =
-                                  write
-                                      ? PUBLIC_WRITE_PATHS.contains(path)
-                                      : PUBLIC_GET_PATHS.contains(path);
-                              var security = new SecurityRequirement();
-                              if (!publicOperation) {
-                                security.addList(BEARER_AUTH);
-                              }
-                              if (write) {
-                                security.addList(CSRF_COOKIE);
-                                security.addList(CSRF_HEADER);
-                              }
-                              operation.setSecurity(
-                                  security.isEmpty() ? List.of() : List.of(security));
-                            }));
+                            (method, operation) ->
+                                operation.setSecurity(operationSecurity(path, method))));
+  }
+
+  private List<SecurityRequirement> operationSecurity(String path, PathItem.HttpMethod method) {
+    boolean write = method != PathItem.HttpMethod.GET;
+    boolean publicOperation =
+        write ? PUBLIC_WRITE_PATHS.contains(path) : PUBLIC_GET_PATHS.contains(path);
+    var security = new SecurityRequirement();
+    if (!publicOperation) {
+      security.addList(BEARER_AUTH);
+    }
+    if (write) {
+      security.addList(CSRF_COOKIE);
+      security.addList(CSRF_HEADER);
+    }
+    return security.isEmpty() ? List.of() : List.of(security);
   }
 }
