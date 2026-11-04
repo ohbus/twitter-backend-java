@@ -37,7 +37,7 @@ describes.
 
 ```bash
 cp .env.example .env
-# Set DB_USER, DB_PASS, and DB_ROOT_PASS to non-empty values in .env.
+# Set DB_USER to a non-root username; set DB_PASS and DB_ROOT_PASS in .env.
 # Set JWT_SECRET to at least 32 UTF-8 bytes.
 ./mvnw clean verify
 docker compose up -d
@@ -50,9 +50,10 @@ The API is available at `http://localhost:8082` and Adminer at
 
 ```bash
 cp .env.example .env
-# For a new database, set DB_USER and DB_PASS to non-empty values and DB_ROOT_PASS=root.
+# For a new database, set a non-root DB_USER, DB_PASS, and DB_ROOT_PASS=root.
 docker compose -f docker-compose.dev.yml up -d
 export JWT_SECRET="$(openssl rand -hex 32)"
+export DB_NAME=twitter_clone # Match DB_NAME in .env if you changed the default.
 export SPRING_DATASOURCE_PASSWORD=root
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```

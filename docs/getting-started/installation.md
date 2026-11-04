@@ -21,8 +21,9 @@ cd twitter-backend-java
 cp .env.example .env
 ```
 
-Set `DB_USER`, `DB_PASS`, and `DB_ROOT_PASS` to non-empty values in `.env`.
-Set `JWT_SECRET` to at least 32 UTF-8 bytes. Never commit real secrets.
+Set `DB_USER` to a non-root username, and set `DB_PASS` and `DB_ROOT_PASS` to
+non-empty values in `.env`. Set `JWT_SECRET` to at least 32 UTF-8 bytes. Never
+commit real secrets.
 
 ## Run the full stack
 
@@ -39,7 +40,7 @@ The Compose stack exposes the API on `http://localhost:8082` and Adminer on
 Start only the development dependencies:
 
 ```bash
-# For a new database, set DB_ROOT_PASS=root and set DB_USER and DB_PASS in .env.
+# For a new database, set DB_ROOT_PASS=root, a non-root DB_USER, and DB_PASS.
 docker compose -f docker-compose.dev.yml up -d
 ```
 
@@ -47,6 +48,7 @@ Then run the API:
 
 ```bash
 export JWT_SECRET="$(openssl rand -hex 32)"
+export DB_NAME=twitter_clone # Match DB_NAME in .env if you changed the default.
 export SPRING_DATASOURCE_PASSWORD=root
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
