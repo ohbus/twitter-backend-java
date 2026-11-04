@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.subho.clone.twitter.entity.HashtagPosts;
@@ -37,6 +38,7 @@ import xyz.subho.clone.twitter.repository.LikesRepository;
 import xyz.subho.clone.twitter.repository.PostsRepository;
 import xyz.subho.clone.twitter.repository.UsersRepository;
 import xyz.subho.clone.twitter.service.PostService;
+import xyz.subho.clone.twitter.service.SearchService;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -47,10 +49,117 @@ class TwitterBackendApplicationTests {
   @Autowired private LikesRepository likesRepository;
   @Autowired private PostsRepository postsRepository;
   @Autowired private PostService postService;
+  @Autowired private SearchService searchService;
   @Autowired private UsersRepository usersRepository;
 
   @Test
   void contextLoads() {}
+
+  @Test
+  @Transactional
+  void searchFindsUsersAndPostsCaseInsensitively() {
+    Users user = user("search-dev", "search-dev@example.com");
+    user.setName("Spring Boot Developer");
+    user.setBio("Spring Boot and Java Engineer");
+    usersRepository.saveAndFlush(user);
+
+    Posts post = post(user, "SpringFramework update: Hello world!");
+    postsRepository.saveAndFlush(post);
+
+    var userResults = searchService.searchUsers("spring boot", PageRequest.of(0, 10));
+    assertThat(userResults.getContent()).extracting("username").contains("search-dev");
+
+    var userHandleResults = searchService.searchUsers("@search-dev", PageRequest.of(0, 10));
+    assertThat(userHandleResults.getContent()).extracting("username").contains("search-dev");
+
+    var postResults = searchService.searchPosts("SPRINGFRAMEWORK", PageRequest.of(0, 10));
+    assertThat(postResults.getContent()).extracting("text").contains(post.getText());
+  }
+
+  @Test
+  @Transactional
+  void searchPostsEscapedWildcardsMatchesOnlyLiteralRowsAgainstDatabase() {
+    Users author = user("wildcard-author", "wildcard-author@example.com");
+    usersRepository.saveAndFlush(author);
+
+    // Literal % and near-matching row
+    Posts postLiteralPercent = post(author, "100% discount deal");
+    Posts postNearPercent = post(author, "1000 discount deal");
+
+    // Literal _ and near-matching row
+    Posts postLiteralUnderscore = post(author, "v1_release update");
+    Posts postNearUnderscore = post(author, "v1arelease update");
+
+    // Literal \ and near-matching row
+    Posts postLiteralBackslash = post(author, "C:\\Windows\\System32");
+    Posts postNearBackslash = post(author, "C:WindowsSystem32");
+
+    postsRepository.saveAllAndFlush(
+        List.of(
+            postLiteralPercent,
+            postNearPercent,
+            postLiteralUnderscore,
+            postNearUnderscore,
+            postLiteralBackslash,
+            postNearBackslash));
+
+    var percentResults = searchService.searchPosts("100%", PageRequest.of(0, 10));
+    assertThat(percentResults.getContent())
+        .extracting("text")
+        .containsExactly("100% discount deal");
+
+    var underscoreResults = searchService.searchPosts("v1_", PageRequest.of(0, 10));
+    assertThat(underscoreResults.getContent())
+        .extracting("text")
+        .containsExactly("v1_release update");
+
+    var backslashResults = searchService.searchPosts("C:\\", PageRequest.of(0, 10));
+    assertThat(backslashResults.getContent())
+        .extracting("text")
+        .containsExactly("C:\\Windows\\System32");
+  }
+
+  @Test
+  @Transactional
+  void searchUsersEscapedWildcardsMatchesOnlyLiteralRowsAgainstDatabase() {
+    // Literal % and near-matching user
+    Users userLiteralPercent = user("alice%dev", "alice.percent@example.com");
+    userLiteralPercent.setName("Alice%Dev");
+    Users userNearPercent = user("alice1dev", "alice.one@example.com");
+    userNearPercent.setName("Alice1Dev");
+
+    // Literal _ and near-matching user
+    Users userLiteralUnderscore = user("bob_coder", "bob.under@example.com");
+    userLiteralUnderscore.setName("Bob_Coder");
+    Users userNearUnderscore = user("bob1coder", "bob.one@example.com");
+    userNearUnderscore.setName("Bob1Coder");
+
+    // Literal \ and near-matching user
+    Users userLiteralBackslash = user("charlie\\sec", "charlie.slash@example.com");
+    userLiteralBackslash.setName("Charlie\\Sec");
+    Users userNearBackslash = user("charliesec", "charlie.sec@example.com");
+    userNearBackslash.setName("CharlieSec");
+
+    usersRepository.saveAllAndFlush(
+        List.of(
+            userLiteralPercent,
+            userNearPercent,
+            userLiteralUnderscore,
+            userNearUnderscore,
+            userLiteralBackslash,
+            userNearBackslash));
+
+    var percentResults = searchService.searchUsers("alice%", PageRequest.of(0, 10));
+    assertThat(percentResults.getContent()).extracting("username").containsExactly("alice%dev");
+
+    var underscoreResults = searchService.searchUsers("bob_", PageRequest.of(0, 10));
+    assertThat(underscoreResults.getContent()).extracting("username").containsExactly("bob_coder");
+
+    var backslashResults = searchService.searchUsers("charlie\\", PageRequest.of(0, 10));
+    assertThat(backslashResults.getContent())
+        .extracting("username")
+        .containsExactly("charlie\\sec");
+  }
 
   @Test
   @Transactional
@@ -140,5 +249,12 @@ class TwitterBackendApplicationTests {
     user.setEmail(email);
     user.setPassword("hashed-password");
     return user;
+  }
+
+  private Posts post(Users user, String text) {
+    Posts post = new Posts();
+    post.setText(text);
+    post.setUsers(user);
+    return post;
   }
 }

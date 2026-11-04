@@ -21,6 +21,9 @@ package xyz.subho.clone.twitter.repository;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -38,4 +41,12 @@ public interface UsersRepository extends JpaRepository<Users, UUID> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select u from Users u where u.id = :id")
   Optional<Users> findByIdForUpdate(@Param("id") UUID id);
+
+  @Query(
+      "select u from Users u where "
+          + "u.username like concat(:query, '%') escape '\\' or "
+          + "u.name like concat(:query, '%') escape '\\' or "
+          + "(u.bio is not null and u.bio like concat(:query, '%') escape '\\')")
+  @NonNull Page<Users> searchUsers(
+      @Param("query") @NonNull String query, @NonNull Pageable pageable);
 }
