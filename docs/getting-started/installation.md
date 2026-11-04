@@ -21,8 +21,8 @@ cd twitter-backend-java
 cp .env.example .env
 ```
 
-Set `DB_USER`, `DB_PASS`, `DB_ROOT_PASS`, and `JWT_SECRET` to non-empty values
-in `.env`. Never commit real secrets.
+Set `DB_USER`, `DB_PASS`, and `DB_ROOT_PASS` to non-empty values in `.env`.
+Set `JWT_SECRET` to at least 32 UTF-8 bytes. Never commit real secrets.
 
 ## Run the full stack
 
@@ -39,16 +39,22 @@ The Compose stack exposes the API on `http://localhost:8082` and Adminer on
 Start only the development dependencies:
 
 ```bash
-# The dev profile connects as root/root.
-# Set DB_ROOT_PASS=root and set DB_USER and DB_PASS to non-empty values in .env.
+# For a new database, set DB_ROOT_PASS=root and set DB_USER and DB_PASS in .env.
 docker compose -f docker-compose.dev.yml up -d
 ```
 
 Then run the API:
 
 ```bash
+export JWT_SECRET="$(openssl rand -hex 32)"
+export SPRING_DATASOURCE_PASSWORD=root
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+Compose reads `.env`, but Maven does not. An existing `moo-data` volume keeps
+the root password used when it was first created. In that case, export that
+password as `SPRING_DATASOURCE_PASSWORD` instead of `root`; do not delete the
+volume or expect changing `DB_ROOT_PASS` to update it.
 
 The native API defaults to `http://localhost:8080`.
 

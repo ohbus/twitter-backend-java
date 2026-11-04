@@ -63,6 +63,9 @@ class OpenApiDocumentationTest {
         .allMatch(operation -> !operation.path("summary").asString().isBlank());
     assertThat(openApi.at("/components/securitySchemes/bearerAuth/type").asString())
         .isEqualTo("http");
+    assertThat(
+            openApi.at("/components/schemas/UserModel/properties/password/writeOnly").asBoolean())
+        .isTrue();
     assertThat(openApi.at("/paths/~1v1~1csrf/get/security").isEmpty()).isTrue();
     assertThat(openApi.at("/paths/~1v1~1authenticate/post/security/0/bearerAuth").isMissingNode())
         .isTrue();

@@ -37,7 +37,8 @@ describes.
 
 ```bash
 cp .env.example .env
-# Set DB_USER, DB_PASS, DB_ROOT_PASS, and JWT_SECRET to non-empty values in .env.
+# Set DB_USER, DB_PASS, and DB_ROOT_PASS to non-empty values in .env.
+# Set JWT_SECRET to at least 32 UTF-8 bytes.
 ./mvnw clean verify
 docker compose up -d
 ```
@@ -49,10 +50,16 @@ The API is available at `http://localhost:8082` and Adminer at
 
 ```bash
 cp .env.example .env
-# Set DB_USER and DB_PASS to non-empty values and DB_ROOT_PASS=root in .env.
+# For a new database, set DB_USER and DB_PASS to non-empty values and DB_ROOT_PASS=root.
 docker compose -f docker-compose.dev.yml up -d
+export JWT_SECRET="$(openssl rand -hex 32)"
+export SPRING_DATASOURCE_PASSWORD=root
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+Compose reads `.env`, but Maven does not. For an existing `moo-data` volume,
+set `SPRING_DATASOURCE_PASSWORD` to the root password used when that volume was
+first created; changing `DB_ROOT_PASS` does not update an existing database.
 
 The native API is available at `http://localhost:8080`. Swagger UI is at
 `/swagger-ui/index.html` outside production.
