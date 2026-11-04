@@ -107,7 +107,9 @@ public class OpenApiConfig {
   private List<SecurityRequirement> operationSecurity(String path, PathItem.HttpMethod method) {
     boolean write = method != PathItem.HttpMethod.GET;
     boolean publicOperation =
-        write ? PUBLIC_WRITE_PATHS.contains(path) : PUBLIC_GET_PATHS.contains(path);
+        write
+            ? method == PathItem.HttpMethod.POST && PUBLIC_WRITE_PATHS.contains(path)
+            : PUBLIC_GET_PATHS.contains(path);
     var security = new SecurityRequirement();
     if (!publicOperation) {
       security.addList(BEARER_AUTH);

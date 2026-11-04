@@ -70,5 +70,6 @@ class OpenApiDocumentationTest {
         .isTrue();
     assertThat(openApi.at("/paths/~1v1~1posts/get/security/0/bearerAuth").isArray()).isTrue();
     assertThat(openApi.at("/paths/~1v1~1posts/post/security/0/csrfHeader").isArray()).isTrue();
+    assertThat(openApi.at("/paths/~1v1~1users/patch/security/0/bearerAuth").isArray()).isTrue();
   }
 }
