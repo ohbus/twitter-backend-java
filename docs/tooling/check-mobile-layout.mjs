@@ -1,13 +1,21 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const chrome =
-  process.env.CHROME_PATH ??
-  (process.platform === "darwin"
-    ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    : "google-chrome");
+const chrome = process.env.CHROME_PATH ?? findChrome();
+
+function findChrome() {
+  if (process.platform === "darwin") {
+    return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  }
+  for (const command of ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser"]) {
+    try {
+      return execFileSync("which", [command], { encoding: "utf8" }).trim();
+    } catch {}
+  }
+  throw new Error("No supported Chrome or Chromium executable was found");
+}
 const profile = await mkdtemp(join(tmpdir(), "moo-docs-chrome-"));
 const server = spawn("python3", ["-m", "http.server", "4173", "-d", "../../site"], {
   cwd: import.meta.dirname,
@@ -30,13 +38,23 @@ const browser = spawn(
     `--user-data-dir=${profile}`,
     "http://127.0.0.1:4173/",
   ],
-  { stdio: "ignore" },
+  { stdio: ["ignore", "ignore", "pipe"] },
 );
-const browserExit = new Promise((resolve) => browser.once("exit", resolve));
-const serverExit = new Promise((resolve) => server.once("exit", resolve));
+let browserError = "";
+browser.stderr.on("data", (data) => {
+  browserError += data.toString();
+});
+browser.on("error", (error) => {
+  browserError += `${error.message}\n`;
+});
+const browserExit = new Promise((resolve) => browser.once("close", resolve));
+const serverExit = new Promise((resolve) => server.once("close", resolve));
 
 const waitForTabs = async () => {
   for (let attempt = 0; attempt < 50; attempt++) {
+    if (browser.exitCode !== null || browser.signalCode !== null) {
+      throw new Error(`Chrome did not start${browserError ? `: ${browserError.trim()}` : ""}`);
+    }
     try {
       const [port] = (await readFile(join(profile, "DevToolsActivePort"), "utf8")).split("\n");
       const response = await fetch(`http://127.0.0.1:${port}/json`);
@@ -44,7 +62,7 @@ const waitForTabs = async () => {
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  throw new Error("Chrome did not start");
+  throw new Error(`Chrome did not start${browserError ? `: ${browserError.trim()}` : ""}`);
 };
 
 try {
