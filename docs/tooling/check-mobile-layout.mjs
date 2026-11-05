@@ -53,6 +53,7 @@ try {
   const socket = new WebSocket(tab.webSocketDebuggerUrl);
   const pending = new Map();
   let requestId = 0;
+  let loadReject;
   socket.onmessage = ({ data }) => {
     const message = JSON.parse(data);
     if (message.method === "Page.loadEventFired") {
@@ -62,6 +63,9 @@ try {
     pending.get(message.id)?.(message);
     pending.delete(message.id);
   };
+  socket.addEventListener("close", () => {
+    loadReject?.(new Error("Chrome DevTools connection closed while loading"));
+  });
   await new Promise((resolve) => (socket.onopen = resolve));
   const call = (method, params = {}) =>
     new Promise((resolve) => {
@@ -78,7 +82,24 @@ try {
       deviceScaleFactor: 1,
       mobile: true,
     });
-    const loaded = new Promise((resolve) => pending.set("load", resolve));
+    const loaded = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        loadReject = undefined;
+        pending.delete("load");
+        reject(new Error(`Page did not load at ${width}px`));
+      }, 10_000);
+      loadReject = (error) => {
+        clearTimeout(timeout);
+        loadReject = undefined;
+        pending.delete("load");
+        reject(error);
+      };
+      pending.set("load", () => {
+        clearTimeout(timeout);
+        loadReject = undefined;
+        resolve();
+      });
+    });
     await call("Page.reload");
     await loaded;
     let layout;
