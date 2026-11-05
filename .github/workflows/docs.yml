@@ -51,14 +51,22 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if ! changed_paths="$(git diff --no-renames --name-only "$BASE_SHA...$HEAD_SHA")"; then
+          changed_paths="$(mktemp)"
+          trap 'rm -f "$changed_paths"' EXIT
+          if ! git diff --no-renames --name-only -z "$BASE_SHA...$HEAD_SHA" > "$changed_paths"; then
             echo '::error::Unable to compute the pull-request diff'
             exit 1
           fi
-          if printf '%s\n' "$changed_paths" | grep -Eq '^(docs/|zensical\.toml$|README\.md$|pom\.xml$|mvnw$|\.mvn/|\.github/workflows/docs\.yml$|src/main/resources/application(-test)?\.properties$|src/main/java/xyz/subho/clone/twitter/(config/OpenApiConfig\.java$|constant/|controller/|model/|security/SecurityConfig\.java$)|src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest\.java$)'; then
+          if grep -zEq '^(docs/|zensical\.toml$|README\.md$|pom\.xml$|mvnw$|\.mvn/|\.github/workflows/docs\.yml$|src/main/resources/application(-test)?\.properties$|src/main/java/xyz/subho/clone/twitter/(config/OpenApiConfig\.java$|constant/|controller/|model/|security/SecurityConfig\.java$)|src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest\.java$)' "$changed_paths"; then
             echo 'affected=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'affected=false' >> "$GITHUB_OUTPUT"
+            grep_status=$?
+            if [ "$grep_status" -eq 1 ]; then
+              echo 'affected=false' >> "$GITHUB_OUTPUT"
+            else
+              echo '::error::Unable to match changed documentation paths'
+              exit 1
+            fi
           fi
       - name: Set up Microsoft JDK 25
         if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
