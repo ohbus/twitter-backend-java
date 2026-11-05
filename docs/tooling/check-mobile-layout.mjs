@@ -118,7 +118,7 @@ try {
         resolve();
       });
     });
-    await call("Page.reload");
+    await Promise.race([call("Page.reload"), loaded]);
     await loaded;
     let layout;
     for (let attempt = 0; attempt < 50 && !layout; attempt++) {
