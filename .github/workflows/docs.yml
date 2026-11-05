@@ -8,7 +8,9 @@ name: Documentation
 on:
   pull_request:
     branches: [ master ]
-    paths: &docs_paths
+  push:
+    branches: [ master ]
+    paths:
       - 'docs/**'
       - 'zensical.toml'
       - 'README.md'
@@ -20,9 +22,6 @@ on:
       - 'src/main/java/xyz/subho/clone/twitter/model/**'
       - 'src/main/java/xyz/subho/clone/twitter/security/SecurityConfig.java'
       - 'src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest.java'
-  push:
-    branches: [ master ]
-    paths: *docs_paths
   workflow_dispatch:
 
 permissions:
@@ -39,33 +38,55 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Detect documentation changes
+        if: github.event_name == 'pull_request'
+        id: documentation
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -Eq '^(docs/|zensical\.toml$|README\.md$|pom\.xml$|\.github/workflows/docs\.yml$|src/main/java/xyz/subho/clone/twitter/(config/OpenApiConfig\.java$|constant/|controller/|model/|security/SecurityConfig\.java$)|src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest\.java$)'; then
+            echo 'affected=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'affected=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Set up Microsoft JDK 25
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         uses: actions/setup-java@v6
         with:
           distribution: 'microsoft'
           java-version: '25'
           cache: 'maven'
       - name: Export OpenAPI
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         run: ./mvnw -B -Dtest=OpenApiDocumentationTest test
       - name: Set up Python
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
           cache: 'pip'
           cache-dependency-path: docs/tooling/requirements.txt
       - name: Install Zensical
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         run: 'pip install --require-hashes --only-binary :all: -r docs/tooling/requirements.txt'
       - name: Set up Node.js
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: docs/tooling/package-lock.json
       - name: Install API documentation tooling
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         run: npm --prefix docs/tooling ci --ignore-scripts
       - name: Build Markdown site
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         run: zensical build --clean --strict
       - name: Validate and build API reference
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         run: |
           npm --prefix docs/tooling run api:lint
           npm --prefix docs/tooling run api:build
@@ -73,8 +94,10 @@ jobs:
         env:
           REDOCLY_TELEMETRY: off
       - name: Configure GitHub Pages
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         uses: actions/configure-pages@v6
       - name: Upload GitHub Pages artifact
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         uses: actions/upload-pages-artifact@v5
         with:
           path: site
