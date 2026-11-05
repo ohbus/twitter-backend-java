@@ -54,7 +54,7 @@ jobs:
           cache: 'pip'
           cache-dependency-path: docs/tooling/requirements.txt
       - name: Install Zensical
-        run: pip install -r docs/tooling/requirements.txt
+        run: 'pip install --require-hashes --only-binary :all: -r docs/tooling/requirements.txt'
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
@@ -62,7 +62,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: docs/tooling/package-lock.json
       - name: Install API documentation tooling
-        run: npm --prefix docs/tooling ci
+        run: npm --prefix docs/tooling ci --ignore-scripts
       - name: Build Markdown site
         run: zensical build --clean --strict
       - name: Validate and build API reference
