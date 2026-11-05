@@ -51,7 +51,7 @@ const browserExit = new Promise((resolve) => browser.once("close", resolve));
 const serverExit = new Promise((resolve) => server.once("close", resolve));
 
 const waitForTabs = async () => {
-  for (let attempt = 0; attempt < 50; attempt++) {
+  for (let attempt = 0; attempt < 300; attempt++) {
     if (browser.exitCode !== null || browser.signalCode !== null) {
       throw new Error(`Chrome did not start${browserError ? `: ${browserError.trim()}` : ""}`);
     }
