@@ -1,9 +1,10 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 
 const output = new URL("../../site/api/reference/index.html", import.meta.url);
 const basePath = "/twitter-backend-java/api/reference";
 const canonicalUrl = `https://subho.xyz${basePath}/`;
 const description = "Interactive OpenAPI reference for the Moo Twitter Backend.";
+const routes = ["authentication", "hashtags", "models", "posts", "search", "users"];
 let html = await readFile(output, "utf8");
 const scriptStart = html.indexOf('<script type="module">');
 
@@ -23,3 +24,9 @@ if (!html.includes(`rel="canonical" href="${canonicalUrl}"`)) {
 }
 
 await writeFile(output, html);
+
+for (const route of routes) {
+  const directory = new URL(`./${route}/`, output);
+  await mkdir(directory, { recursive: true });
+  await copyFile(output, new URL("index.html", directory));
+}
