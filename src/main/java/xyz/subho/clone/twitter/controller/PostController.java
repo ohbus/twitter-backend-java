@@ -116,8 +116,7 @@ public class PostController {
   @DeleteMapping(PostV1Constants.POST_ID)
   @Operation(summary = "Delete an owned post")
   @ApiResponse(responseCode = "200", description = "Post deleted")
-  public ResponseEntity<HttpStatus> deletePost(
-      @PathVariable("postId") UUID postId, Principal principal) {
+  public ResponseEntity<Void> deletePost(@PathVariable("postId") UUID postId, Principal principal) {
 
     var user = userService.getUserByUserName(principal.getName());
     if (user == null) {
