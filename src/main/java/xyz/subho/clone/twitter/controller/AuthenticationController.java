@@ -20,6 +20,9 @@ package xyz.subho.clone.twitter.controller;
 
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.Objects;
@@ -47,6 +50,7 @@ import xyz.subho.clone.twitter.service.UserService;
 @RestController
 @RequestMapping(AuthV1Constants.BASE_PATH)
 @Timed(value = "moo.auth.timer", description = "Time taken to process auth requests")
+@Tag(name = "Authentication", description = "CSRF, JWT, refresh-token, and logout operations")
 public class AuthenticationController {
 
   private final AuthenticationManager authenticationManager;
@@ -70,6 +74,8 @@ public class AuthenticationController {
 
   @PostMapping(AuthV1Constants.AUTHENTICATE)
   @Counted(value = "moo.auth.login", description = "Number of user logins")
+  @Operation(summary = "Authenticate with username and password")
+  @ApiResponse(responseCode = "200", description = "JWT and rotating refresh token issued")
   public ResponseEntity<AuthenticationResponse> createAuthenticationToken(
       @Valid @RequestBody AuthenticationRequest authenticationRequest) {
 
@@ -94,11 +100,15 @@ public class AuthenticationController {
   }
 
   @GetMapping(AuthV1Constants.CSRF)
+  @Operation(summary = "Initialize a CSRF token and cookie")
+  @ApiResponse(responseCode = "200", description = "CSRF token initialized")
   public CsrfToken csrfToken(CsrfToken csrfToken) {
     return csrfToken;
   }
 
   @PostMapping(AuthV1Constants.REFRESH)
+  @Operation(summary = "Rotate a refresh token and issue a JWT")
+  @ApiResponse(responseCode = "200", description = "Replacement JWT and refresh token issued")
   public ResponseEntity<AuthenticationResponse> refreshToken(
       @Valid @RequestBody TokenRefreshRequest request) {
     var token = refreshTokenService.rotateRefreshToken(request.refreshToken());
@@ -109,6 +119,8 @@ public class AuthenticationController {
   }
 
   @PostMapping(AuthV1Constants.LOGOUT)
+  @Operation(summary = "Revoke refresh tokens for the authenticated user")
+  @ApiResponse(responseCode = "200", description = "Logout completed")
   public ResponseEntity<String> logoutUser(Principal principal) {
     var user = userService.getUserByUserName(principal.getName());
     if (user == null) {

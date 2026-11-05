@@ -1,0 +1,12 @@
+extends:
+  - recommended
+
+telemetry: off
+
+rules:
+  no-server-example.com: off
+  operation-4xx-response: off
+
+openapi:
+  schemaDefinitionsTagName: Models
+  sortRequiredPropsFirst: true

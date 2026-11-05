@@ -20,6 +20,9 @@ package xyz.subho.clone.twitter.controller;
 
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +44,7 @@ import xyz.subho.clone.twitter.utility.Utility;
 @RestController
 @RequestMapping(SearchV1Constants.BASE_PATH)
 @Timed(value = "moo.search.timer", description = "Time taken to process search requests")
+@Tag(name = "Search", description = "User and post search")
 public class SearchController {
 
   private static final String CREATED_AT = "createdAt";
@@ -54,6 +58,8 @@ public class SearchController {
 
   @GetMapping
   @Counted(value = "moo.search.all", description = "Number of combined search requests")
+  @Operation(summary = "Search users and posts")
+  @ApiResponse(responseCode = "200", description = "Combined search results")
   public ResponseEntity<SearchResultModel> searchAll(
       @RequestParam("q") String query,
       @PageableDefault(
@@ -68,6 +74,8 @@ public class SearchController {
 
   @GetMapping(SearchV1Constants.POSTS)
   @Counted(value = "moo.search.posts", description = "Number of post search requests")
+  @Operation(summary = "Search posts")
+  @ApiResponse(responseCode = "200", description = "Page of matching posts")
   public ResponseEntity<Page<PostModel>> searchPosts(
       @RequestParam("q") String query,
       @PageableDefault(
@@ -82,6 +90,8 @@ public class SearchController {
 
   @GetMapping(SearchV1Constants.USERS)
   @Counted(value = "moo.search.users", description = "Number of user search requests")
+  @Operation(summary = "Search users")
+  @ApiResponse(responseCode = "200", description = "Page of matching users")
   public ResponseEntity<Page<UserSearchModel>> searchUsers(
       @RequestParam("q") String query,
       @PageableDefault(

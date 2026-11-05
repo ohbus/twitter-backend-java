@@ -1,117 +1,91 @@
 # Moo: Twitter Clone Backend
 
-[![Master CI](https://github.com/scaleracademy/twitter-backend-java/actions/workflows/master-ci.yml/badge.svg)](https://github.com/scaleracademy/twitter-backend-java/actions/workflows/master-ci.yml)
-[![PR Checker](https://github.com/scaleracademy/twitter-backend-java/actions/workflows/pr-checker.yml/badge.svg)](https://github.com/scaleracademy/twitter-backend-java/actions/workflows/pr-checker.yml)
+[![Master CI](https://github.com/ohbus/twitter-backend-java/actions/workflows/master-ci.yml/badge.svg)](https://github.com/ohbus/twitter-backend-java/actions/workflows/master-ci.yml)
+[![PR Checker](https://github.com/ohbus/twitter-backend-java/actions/workflows/pr-checker.yml/badge.svg)](https://github.com/ohbus/twitter-backend-java/actions/workflows/pr-checker.yml)
+[![Documentation](https://github.com/ohbus/twitter-backend-java/actions/workflows/docs.yml/badge.svg)](https://subho.xyz/twitter-backend-java/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-A robust, high-performance Twitter clone backend built with the latest
-industry standards.
+A Spring Boot backend for a Twitter-style social network, built with Java 25,
+Spring Boot 4.1, Spring Security, Spring Data JPA, and MySQL.
 
-## 🚀 Modern Tech Stack
+## Documentation
 
-For a detailed breakdown of our architectural choices, visit our
-[Technology Selection](https://github.com/scaleracademy/twitter-backend-java/wiki/Technology-Selections)
-wiki page.
+The complete, searchable documentation is published at
+**[subho.xyz/twitter-backend-java](https://subho.xyz/twitter-backend-java/)**.
+Its Markdown source lives in [`docs/`](docs/README.md), next to the code it
+describes.
 
-- **Java 25** (Microsoft Build of OpenJDK)
-- **Spring Boot 4.1** (Spring Framework 7.0)
-- **Jakarta EE 11** (Jakarta Persistence & Servlet APIs)
-- **Virtual Threads (Project Loom)** enabled for massive concurrency.
-- **JWT-based Security** via Spring Security 7.0.
-- **Spring Data JPA** with MySQL/H2 support.
-- **OpenTelemetry** for native observability.
-- **Springdoc OpenAPI 3** for Swagger documentation.
+- [Getting started](docs/getting-started/README.md)
+- [Architecture](docs/architecture/README.md)
+- [API guide](docs/api/README.md)
+- [Quality and CI](docs/quality.md)
+- [Contributing](CONTRIBUTING.md)
 
-## 🛠️ Getting Started
+## Technology
 
-### Prerequisites
+- Java 25 with virtual threads
+- Spring Boot 4.1 and Spring Framework 7
+- Spring MVC, Spring Security, and Jakarta Validation
+- Spring Data JPA with MySQL and H2
+- JWT access tokens and rotating refresh tokens
+- Springdoc OpenAPI, Micrometer, and OpenTelemetry
+- JaCoCo, Sonar, CodeQL, and multi-architecture containers
 
-- JDK 25+
-- Maven 3.9+
-- Docker & Docker Compose (optional)
+## Quick start
 
-### Quick Start
+### Full stack
 
-Choose the setup that fits your workflow. For more details, see our
-[Installation Guide](https://github.com/scaleracademy/twitter-backend-java/wiki/Installation).
+```bash
+cp .env.example .env
+# Set DB_USER to a non-root username; set DB_PASS and DB_ROOT_PASS in .env.
+# Set JWT_SECRET to at least 32 UTF-8 bytes.
+./mvnw clean verify
+docker compose up -d
+```
 
-#### Option A: Zero-Installation (Full Stack)
+The API is available at `http://localhost:8082` and Adminer at
+`http://localhost:8083`.
 
-Ideal for testing or a quick look. Runs everything in Docker.
+### Backend development
 
-1. `cp .env.example .env`
-2. `docker compose up -d`
-3. API: `http://localhost:8082` | DB Admin: `http://localhost:8083`
+```bash
+cp .env.example .env
+# For a new database, set a non-root DB_USER, DB_PASS, and DB_ROOT_PASS=root.
+docker compose -f docker-compose.dev.yml up -d
+export JWT_SECRET="$(openssl rand -hex 32)"
+export DB_NAME=twitter_clone # Match DB_NAME in .env if you changed the default.
+export SPRING_DATASOURCE_PASSWORD=root
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
 
-#### Option B: Native Development (Dependencies Only)
+Compose reads `.env`, but Maven does not. For an existing `moo-data` volume,
+set `SPRING_DATASOURCE_PASSWORD` to the root password used when that volume was
+first created; changing `DB_ROOT_PASS` does not update an existing database.
+If you need data created by the former native profile, use
+`export DB_NAME=twitter` before starting Maven.
 
-Ideal for coding. Runs DB in Docker, App in your IDE/CLI.
-
-1. `cp .env.example .env`
-2. `docker compose -f docker-compose.dev.yml up -d`
-3. Configure your IDE using our [IDE Instructions](https://github.com/scaleracademy/twitter-backend-java/wiki/IDE-Instructions).
-4. Run the **"Moo API"** configuration in IntelliJ IDEA, or use:
-   `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`
-5. API: `http://localhost:8080` | DB Admin: `http://localhost:8083`
-
-For advanced configuration, visit [Project Configuration](https://github.com/scaleracademy/twitter-backend-java/wiki/Project-Configuration).
+The native API is available at `http://localhost:8080`. Swagger UI is at
+`/swagger-ui/index.html` outside production.
 
 State-changing requests require the `XSRF-TOKEN` cookie value in the
-`X-XSRF-TOKEN` header, including public POST endpoints. Call `GET /v1/csrf`
-first to receive the token and set the cookie; authenticated requests also need
-JWT authentication. Timestamps in API responses use ISO-8601 UTC values.
+`X-XSRF-TOKEN` header, including public POST endpoints. Start with
+`GET /v1/csrf`; authenticated endpoints also require a Bearer JWT. See the
+[authentication guide](docs/api/authentication.md) for the complete flow.
 
-## 📖 API Documentation
+## Verify
 
-Access the Interactive Swagger UI at:
-👉 `http://localhost:8082/swagger-ui/index.html`
+```bash
+./mvnw clean verify
+```
 
-Comprehensive endpoint details and data contracts are available at:
+Coverage output is written to `target/site/jacoco/index.html`.
 
-- [API Endpoints Overview](https://github.com/scaleracademy/twitter-backend-java/wiki/API-Endpoints)
-- [Request and Response Models](https://github.com/scaleracademy/twitter-backend-java/wiki/Request-and-Response-Models)
-- [How to Test Endpoints](https://github.com/scaleracademy/twitter-backend-java/wiki/How-to-Test-Endpoints)
+## Contributing
 
-## 🏗️ Architecture & Best Practices
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[documentation workflow](docs/contributing/workflow.md) before opening a pull
+request. Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-- **Scalable Pagination**: All list endpoints use `Pageable`. See our
-  [Entity Design](https://github.com/scaleracademy/twitter-backend-java/wiki/Entity-Design).
-- **Distroless Containers**: Secure, minimal runtime environment.
-- **Multi-Arch Support**: Images optimized for `amd64` and `arm64`.
-- **Zero-Qualified Names**: The codebase strictly uses imports.
-- **Null Safety**: Integrated **JSpecify** annotations.
+## License
 
-### Quality and coverage
-
-The coverage target is 100% line and branch coverage for behavior-bearing code.
-Tests should prove authorization, validation, persistence, and error behavior;
-they should not be added only to inflate a metric. Generated/data-only models
-and framework bootstrap glue are excluded consistently from JaCoCo and Sonar.
-Run `./mvnw clean verify` and inspect `target/site/jacoco/index.html` before
-requesting review. The detailed testing strategy is in
-[`docs/quality.md`](docs/quality.md).
-
-## 🤖 CI/CD Pipeline
-
-Our pipeline is optimized for robust speed and reliability. Learn more about
-how we maintain quality in [Collaboration](https://github.com/scaleracademy/twitter-backend-java/wiki/Collaboration)
-and [Static Analysis](https://github.com/scaleracademy/twitter-backend-java/wiki/Static-Analysis).
-
-- **PR Checker**: Cross-platform linting and multi-arch smoke builds.
-- **Master CI**: Artifact archival, CodeQL scanning, and official distribution.
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md)
-and the following wiki sections:
-
-- [Working with Issues](https://github.com/scaleracademy/twitter-backend-java/wiki/Working-with-issues)
-- [Reviewing Pull Requests](https://github.com/scaleracademy/twitter-backend-java/wiki/Reviewing-pull-requests)
-- [Recognizing Contributors](https://github.com/scaleracademy/twitter-backend-java/wiki/Recognizing-contributors)
-
-For our future vision, check the [Roadmap](https://github.com/scaleracademy/twitter-backend-java/wiki/Roadmap).
-
-## 📜 License
-
-This project is licensed under the **GNU Affero General Public License v3.0**.
-See [LICENSE](LICENSE) for details.
+Moo is licensed under the [GNU Affero General Public License v3.0](LICENSE).

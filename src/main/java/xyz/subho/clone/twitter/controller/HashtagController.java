@@ -20,6 +20,9 @@ package xyz.subho.clone.twitter.controller;
 
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -37,6 +40,7 @@ import xyz.subho.clone.twitter.utility.Utility;
 @RestController
 @RequestMapping(HashtagV1Constants.BASE_PATH)
 @Timed(value = "moo.hashtags.timer", description = "Time taken to process hashtag requests")
+@Tag(name = "Hashtags", description = "Hashtag discovery")
 public class HashtagController {
 
   private final HashtagService hashtagService;
@@ -47,6 +51,8 @@ public class HashtagController {
 
   @GetMapping
   @Counted(value = "moo.hashtags.viewed", description = "Number of times hashtags were viewed")
+  @Operation(summary = "List hashtags by recent activity")
+  @ApiResponse(responseCode = "200", description = "Page of hashtags")
   public Page<HashtagModel> getAllHashtags(
       @PageableDefault(
               size = 20,
@@ -58,6 +64,8 @@ public class HashtagController {
   }
 
   @GetMapping(HashtagV1Constants.TAG_POSTS)
+  @Operation(summary = "List posts for a hashtag")
+  @ApiResponse(responseCode = "200", description = "Page of posts")
   public Page<PostModel> getPosts(
       @PathVariable("tag") String tag,
       @PageableDefault(

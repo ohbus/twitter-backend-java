@@ -1,5 +1,8 @@
 HELP.md
 target/
+site/
+docs/tooling/node_modules/
+docs/tooling/.venv/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

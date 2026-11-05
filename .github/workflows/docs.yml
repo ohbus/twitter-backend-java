@@ -1,0 +1,96 @@
+#
+# Twitter Backend - Moo: Twitter Clone Application Backend by Scaler
+# Copyright © 2021-2026 Subhrodip Mohanta (hello@subho.xyz)
+#
+
+name: Documentation
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths: &docs_paths
+      - 'docs/**'
+      - 'zensical.toml'
+      - 'README.md'
+      - 'pom.xml'
+      - '.github/workflows/docs.yml'
+      - 'src/main/java/xyz/subho/clone/twitter/config/OpenApiConfig.java'
+      - 'src/main/java/xyz/subho/clone/twitter/constant/**'
+      - 'src/main/java/xyz/subho/clone/twitter/controller/**'
+      - 'src/main/java/xyz/subho/clone/twitter/model/**'
+      - 'src/main/java/xyz/subho/clone/twitter/security/SecurityConfig.java'
+      - 'src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest.java'
+  push:
+    branches: [ master ]
+    paths: *docs_paths
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Set up Microsoft JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'microsoft'
+          java-version: '25'
+          cache: 'maven'
+      - name: Export OpenAPI
+        run: ./mvnw -B -Dtest=OpenApiDocumentationTest test
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+          cache-dependency-path: docs/tooling/requirements.txt
+      - name: Install Zensical
+        run: pip install -r docs/tooling/requirements.txt
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: docs/tooling/package-lock.json
+      - name: Install API documentation tooling
+        run: npm --prefix docs/tooling ci
+      - name: Build Markdown site
+        run: zensical build --clean --strict
+      - name: Validate and build API reference
+        run: |
+          npm --prefix docs/tooling run api:lint
+          npm --prefix docs/tooling run api:build
+          cp target/generated-docs/openapi.json site/api/openapi.json
+        env:
+          REDOCLY_TELEMETRY: off
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    name: Deploy Documentation
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

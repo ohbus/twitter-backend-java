@@ -20,6 +20,9 @@ package xyz.subho.clone.twitter.controller;
 
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.Objects;
@@ -47,6 +50,7 @@ import xyz.subho.clone.twitter.utility.Utility;
 @RestController
 @RequestMapping(PostV1Constants.BASE_PATH)
 @Timed(value = "moo.posts.timer", description = "Time taken to process post requests")
+@Tag(name = "Posts", description = "Posts, replies, reposts, and likes")
 public class PostController {
 
   private final PostService postService;
@@ -58,6 +62,8 @@ public class PostController {
   }
 
   @GetMapping
+  @Operation(summary = "List posts")
+  @ApiResponse(responseCode = "200", description = "Page of posts")
   public ResponseEntity<Page<PostModel>> getAllPosts(
       @PageableDefault(
               size = 20,
@@ -70,6 +76,8 @@ public class PostController {
   }
 
   @GetMapping(PostV1Constants.POST_ID)
+  @Operation(summary = "Get a post")
+  @ApiResponse(responseCode = "200", description = "Post found")
   public ResponseEntity<PostModel> getPost(@PathVariable("postId") UUID postId) {
     PostModel post = postService.getPost(postId);
     return new ResponseEntity<>(post, HttpStatus.OK);
@@ -77,6 +85,8 @@ public class PostController {
 
   @PostMapping
   @Counted(value = "moo.posts.created", description = "Number of posts created")
+  @Operation(summary = "Create a post, reply, or repost")
+  @ApiResponse(responseCode = "201", description = "Post created")
   public ResponseEntity<PostModel> addPost(
       @Valid @RequestBody PostModel postModel, Principal principal) {
     var user = userService.getUserByUserName(principal.getName());
@@ -104,6 +114,8 @@ public class PostController {
   }
 
   @DeleteMapping(PostV1Constants.POST_ID)
+  @Operation(summary = "Delete an owned post")
+  @ApiResponse(responseCode = "200", description = "Post deleted")
   public ResponseEntity<HttpStatus> deletePost(
       @PathVariable("postId") UUID postId, Principal principal) {
 
@@ -117,6 +129,8 @@ public class PostController {
 
   @PutMapping(PostV1Constants.LIKE)
   @Counted(value = "moo.posts.liked", description = "Number of posts liked")
+  @Operation(summary = "Like a post")
+  @ApiResponse(responseCode = "201", description = "Updated like count")
   public ResponseEntity<Long> likePost(@PathVariable("postId") UUID postId, Principal principal) {
 
     var user = userService.getUserByUserName(principal.getName());
@@ -128,6 +142,8 @@ public class PostController {
   }
 
   @DeleteMapping(PostV1Constants.LIKE)
+  @Operation(summary = "Remove a post like")
+  @ApiResponse(responseCode = "200", description = "Updated like count")
   public ResponseEntity<Long> removeLikePost(
       @PathVariable("postId") UUID postId, Principal principal) {
 
@@ -140,6 +156,8 @@ public class PostController {
   }
 
   @GetMapping(PostV1Constants.REPLIES)
+  @Operation(summary = "List replies to a post")
+  @ApiResponse(responseCode = "200", description = "Page of replies")
   public ResponseEntity<Page<PostModel>> getReplies(
       @PathVariable("postId") UUID postId,
       @PageableDefault(

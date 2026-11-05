@@ -20,6 +20,9 @@ package xyz.subho.clone.twitter.controller;
 
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.Objects;
@@ -50,6 +53,7 @@ import xyz.subho.clone.twitter.utility.Utility;
 @RestController
 @RequestMapping(UserV1Constants.BASE_PATH)
 @Timed(value = "moo.users.timer", description = "Time taken to process user requests")
+@Tag(name = "Users", description = "Profiles and social relationships")
 public class UserController {
 
   private final UserService userService;
@@ -61,6 +65,8 @@ public class UserController {
   }
 
   @GetMapping(UserV1Constants.USER_ID_OR_NAME)
+  @Operation(summary = "Get a user by UUID or @username")
+  @ApiResponse(responseCode = "200", description = "User found")
   public ResponseEntity<UserModel> getUserByUserIdOrUserName(
       @PathVariable("userNameOrUserId") String userNameOrUserId) {
 
@@ -88,6 +94,8 @@ public class UserController {
 
   @PostMapping
   @Counted(value = "moo.users.signup", description = "Number of user signups")
+  @Operation(summary = "Register a user")
+  @ApiResponse(responseCode = "201", description = "User created")
   public ResponseEntity<UserModel> createUser(@Valid @RequestBody UserModel userResponse) {
     var user = userService.addUser(userResponse);
     return new ResponseEntity<>(user, HttpStatus.CREATED);
@@ -95,6 +103,8 @@ public class UserController {
 
   @PatchMapping
   @Timed(value = "moo.users.update", description = "Time taken to update user profile")
+  @Operation(summary = "Update the authenticated user profile")
+  @ApiResponse(responseCode = "200", description = "Profile updated")
   public ResponseEntity<UserModel> updateUser(
       @Valid @RequestBody UserUpdateRequest userUpdateRequest, Principal principal) {
     if (userService.getUserByUserName(principal.getName()) == null) {
@@ -105,6 +115,8 @@ public class UserController {
 
   @PutMapping(UserV1Constants.FOLLOW)
   @Counted(value = "moo.users.follow", description = "Number of follow actions")
+  @Operation(summary = "Follow a user")
+  @ApiResponse(responseCode = "204", description = "User followed")
   public ResponseEntity<HttpStatus> addFollower(@PathVariable UUID userId, Principal principal) {
     var follower = userService.getUserByUserName(principal.getName());
     if (follower == null) {
@@ -115,6 +127,8 @@ public class UserController {
   }
 
   @DeleteMapping(UserV1Constants.FOLLOW)
+  @Operation(summary = "Unfollow a user")
+  @ApiResponse(responseCode = "204", description = "User unfollowed")
   public ResponseEntity<HttpStatus> removeFollower(
       @PathVariable("userId") UUID userId, Principal principal) {
     var follower = userService.getUserByUserName(principal.getName());
@@ -126,6 +140,8 @@ public class UserController {
   }
 
   @GetMapping(UserV1Constants.FOLLOWERS)
+  @Operation(summary = "List a user's followers")
+  @ApiResponse(responseCode = "200", description = "Page of followers")
   public Page<UserModel> getFollowers(
       @PathVariable("userId") UUID userId,
       @PageableDefault(
@@ -138,6 +154,8 @@ public class UserController {
   }
 
   @GetMapping(UserV1Constants.FOLLOWINGS)
+  @Operation(summary = "List users followed by a user")
+  @ApiResponse(responseCode = "200", description = "Page of followed users")
   public Page<UserModel> getFollowings(
       @PathVariable("userId") UUID userId,
       @PageableDefault(
