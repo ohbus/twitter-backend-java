@@ -15,7 +15,11 @@ on:
       - 'zensical.toml'
       - 'README.md'
       - 'pom.xml'
+      - 'mvnw'
+      - '.mvn/**'
       - '.github/workflows/docs.yml'
+      - 'src/main/resources/application.properties'
+      - 'src/main/resources/application-test.properties'
       - 'src/main/java/xyz/subho/clone/twitter/config/OpenApiConfig.java'
       - 'src/main/java/xyz/subho/clone/twitter/constant/**'
       - 'src/main/java/xyz/subho/clone/twitter/controller/**'
@@ -47,7 +51,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if git diff --name-only "$BASE_SHA...$HEAD_SHA" | grep -Eq '^(docs/|zensical\.toml$|README\.md$|pom\.xml$|\.github/workflows/docs\.yml$|src/main/java/xyz/subho/clone/twitter/(config/OpenApiConfig\.java$|constant/|controller/|model/|security/SecurityConfig\.java$)|src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest\.java$)'; then
+          if git diff --name-only "$BASE_SHA...$HEAD_SHA" | grep -Eq '^(docs/|zensical\.toml$|README\.md$|pom\.xml$|mvnw$|\.mvn/|\.github/workflows/docs\.yml$|src/main/resources/application(-test)?\.properties$|src/main/java/xyz/subho/clone/twitter/(config/OpenApiConfig\.java$|constant/|controller/|model/|security/SecurityConfig\.java$)|src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest\.java$)'; then
             echo 'affected=true' >> "$GITHUB_OUTPUT"
           else
             echo 'affected=false' >> "$GITHUB_OUTPUT"
