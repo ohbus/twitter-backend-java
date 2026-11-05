@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "api:lint": "redocly lint ../../target/generated-docs/openapi.json",
-    "api:build": "redocly build-docs ../../target/generated-docs/openapi.json --inlineBundle --output ../../site/api/reference/index.html && node finalize-api-reference.mjs"
+    "api:build": "redocly build-docs ../../target/generated-docs/openapi.json --inlineBundle --output ../../site/api/reference/index.html && node finalize-api-reference.mjs",
+    "site:mobile-check": "node check-mobile-layout.mjs"
   },
   "devDependencies": {
     "@redocly/cli": "2.73.0"

@@ -93,6 +93,9 @@ jobs:
           cp target/generated-docs/openapi.json site/api/openapi.json
         env:
           REDOCLY_TELEMETRY: off
+      - name: Check mobile layout
+        if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
+        run: npm --prefix docs/tooling run site:mobile-check
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request' || steps.documentation.outputs.affected == 'true'
         uses: actions/configure-pages@v6
