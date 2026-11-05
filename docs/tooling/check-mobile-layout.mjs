@@ -78,17 +78,20 @@ try {
       pending.get("load")?.();
       pending.delete("load");
     }
-    pending.get(message.id)?.(message);
+    pending.get(message.id)?.resolve(message);
     pending.delete(message.id);
   };
   socket.addEventListener("close", () => {
-    loadReject?.(new Error("Chrome DevTools connection closed while loading"));
+    const error = new Error("Chrome DevTools connection closed");
+    loadReject?.(error);
+    for (const pendingCall of pending.values()) pendingCall.reject?.(error);
+    pending.clear();
   });
   await new Promise((resolve) => (socket.onopen = resolve));
   const call = (method, params = {}) =>
-    new Promise((resolve) => {
+    new Promise((resolve, reject) => {
       const id = ++requestId;
-      pending.set(id, resolve);
+      pending.set(id, { resolve, reject });
       socket.send(JSON.stringify({ id, method, params }));
     });
   await call("Page.enable");
