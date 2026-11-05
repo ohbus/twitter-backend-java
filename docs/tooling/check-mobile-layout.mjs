@@ -32,6 +32,8 @@ const browser = spawn(
   ],
   { stdio: "ignore" },
 );
+const browserExit = new Promise((resolve) => browser.once("exit", resolve));
+const serverExit = new Promise((resolve) => server.once("exit", resolve));
 
 const waitForTabs = async () => {
   for (let attempt = 0; attempt < 50; attempt++) {
@@ -53,6 +55,10 @@ try {
   let requestId = 0;
   socket.onmessage = ({ data }) => {
     const message = JSON.parse(data);
+    if (message.method === "Page.loadEventFired") {
+      pending.get("load")?.();
+      pending.delete("load");
+    }
     pending.get(message.id)?.(message);
     pending.delete(message.id);
   };
@@ -63,6 +69,7 @@ try {
       pending.set(id, resolve);
       socket.send(JSON.stringify({ id, method, params }));
     });
+  await call("Page.enable");
 
   for (const width of [320, 375]) {
     await call("Emulation.setDeviceMetricsOverride", {
@@ -71,7 +78,9 @@ try {
       deviceScaleFactor: 1,
       mobile: true,
     });
+    const loaded = new Promise((resolve) => pending.set("load", resolve));
     await call("Page.reload");
+    await loaded;
     let layout;
     for (let attempt = 0; attempt < 50 && !layout; attempt++) {
       const result = await call("Runtime.evaluate", {
@@ -104,10 +113,6 @@ try {
 } finally {
   browser.kill();
   server.kill();
-  await Promise.all(
-    [browser, server].map(
-      (process) => new Promise((resolve) => process.once("exit", resolve)),
-    ),
-  );
+  await Promise.all([browserExit, serverExit]);
   await rm(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }
