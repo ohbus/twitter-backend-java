@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -26,7 +26,7 @@ const browser = spawn(
     "--headless=new",
     "--no-sandbox",
     "--disable-dev-shm-usage",
-    "--remote-debugging-port=9222",
+    "--remote-debugging-port=0",
     `--user-data-dir=${profile}`,
     "http://127.0.0.1:4173/",
   ],
@@ -36,7 +36,8 @@ const browser = spawn(
 const waitForTabs = async () => {
   for (let attempt = 0; attempt < 50; attempt++) {
     try {
-      const response = await fetch("http://127.0.0.1:9222/json");
+      const [port] = (await readFile(join(profile, "DevToolsActivePort"), "utf8")).split("\n");
+      const response = await fetch(`http://127.0.0.1:${port}/json`);
       if (response.ok) return response.json();
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -71,11 +72,13 @@ try {
       mobile: true,
     });
     await call("Page.reload");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const result = await call("Runtime.evaluate", {
-      expression: `(() => {
+    let layout;
+    for (let attempt = 0; attempt < 50 && !layout; attempt++) {
+      const result = await call("Runtime.evaluate", {
+        expression: `(() => {
         const root = document.documentElement;
         const article = document.querySelector("article");
+        if (!article) return null;
         const bounds = article.getBoundingClientRect();
         const clipped = [...article.querySelectorAll("*")]
           .filter((element) => {
@@ -86,9 +89,12 @@ try {
           .slice(0, 5);
         return { rootFits: root.scrollWidth <= root.clientWidth, clipped };
       })()`,
-      returnByValue: true,
-    });
-    const layout = result.result.result.value;
+        returnByValue: true,
+      });
+      layout = result.result.result.value;
+      if (!layout) await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    if (!layout) throw new Error(`${width}px layout did not load`);
     if (!layout.rootFits || layout.clipped.length) {
       throw new Error(`${width}px layout overflows: ${layout.clipped.join(", ")}`);
     }
