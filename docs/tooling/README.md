@@ -19,7 +19,7 @@ search.
 From the repository root:
 
 ```bash
-python3 -m venv docs/tooling/.venv
+python3.13 -m venv docs/tooling/.venv
 docs/tooling/.venv/bin/pip install --require-hashes --only-binary :all: -r docs/tooling/requirements.txt
 npm --prefix docs/tooling ci --ignore-scripts
 ./mvnw -B -Dtest=OpenApiDocumentationTest test
