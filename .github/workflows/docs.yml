@@ -51,7 +51,11 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if git diff --no-renames --name-only "$BASE_SHA...$HEAD_SHA" | grep -Eq '^(docs/|zensical\.toml$|README\.md$|pom\.xml$|mvnw$|\.mvn/|\.github/workflows/docs\.yml$|src/main/resources/application(-test)?\.properties$|src/main/java/xyz/subho/clone/twitter/(config/OpenApiConfig\.java$|constant/|controller/|model/|security/SecurityConfig\.java$)|src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest\.java$)'; then
+          if ! changed_paths="$(git diff --no-renames --name-only "$BASE_SHA...$HEAD_SHA")"; then
+            echo '::error::Unable to compute the pull-request diff'
+            exit 1
+          fi
+          if printf '%s\n' "$changed_paths" | grep -Eq '^(docs/|zensical\.toml$|README\.md$|pom\.xml$|mvnw$|\.mvn/|\.github/workflows/docs\.yml$|src/main/resources/application(-test)?\.properties$|src/main/java/xyz/subho/clone/twitter/(config/OpenApiConfig\.java$|constant/|controller/|model/|security/SecurityConfig\.java$)|src/test/java/xyz/subho/clone/twitter/OpenApiDocumentationTest\.java$)'; then
             echo 'affected=true' >> "$GITHUB_OUTPUT"
           else
             echo 'affected=false' >> "$GITHUB_OUTPUT"
