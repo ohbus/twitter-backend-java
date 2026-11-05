@@ -8,7 +8,8 @@ search.
 
 | File | Purpose |
 | --- | --- |
-| `requirements.txt` | Pins the Zensical site generator |
+| `requirements.in` | Declares the direct Python dependency |
+| `requirements.txt` | Locks the resolved Python dependency graph and hashes |
 | `package.json` | Defines local Redocly commands and the pinned CLI dependency |
 | `package-lock.json` | Reproduces the Node dependency graph in CI |
 | `redocly.yaml` | Validates and configures the generated OpenAPI reference |
@@ -18,9 +19,9 @@ search.
 From the repository root:
 
 ```bash
-python3 -m venv docs/tooling/.venv
-docs/tooling/.venv/bin/pip install -r docs/tooling/requirements.txt
-npm --prefix docs/tooling ci
+python3.13 -m venv docs/tooling/.venv
+docs/tooling/.venv/bin/pip install --require-hashes --only-binary :all: -r docs/tooling/requirements.txt
+npm --prefix docs/tooling ci --ignore-scripts
 ./mvnw -B -Dtest=OpenApiDocumentationTest test
 docs/tooling/.venv/bin/zensical build --clean --strict
 npm --prefix docs/tooling run api:lint
