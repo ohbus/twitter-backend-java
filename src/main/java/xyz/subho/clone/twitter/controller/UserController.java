@@ -117,7 +117,7 @@ public class UserController {
   @Counted(value = "moo.users.follow", description = "Number of follow actions")
   @Operation(summary = "Follow a user")
   @ApiResponse(responseCode = "204", description = "User followed")
-  public ResponseEntity<HttpStatus> addFollower(@PathVariable UUID userId, Principal principal) {
+  public ResponseEntity<Void> addFollower(@PathVariable UUID userId, Principal principal) {
     var follower = userService.getUserByUserName(principal.getName());
     if (follower == null) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -129,7 +129,7 @@ public class UserController {
   @DeleteMapping(UserV1Constants.FOLLOW)
   @Operation(summary = "Unfollow a user")
   @ApiResponse(responseCode = "204", description = "User unfollowed")
-  public ResponseEntity<HttpStatus> removeFollower(
+  public ResponseEntity<Void> removeFollower(
       @PathVariable("userId") UUID userId, Principal principal) {
     var follower = userService.getUserByUserName(principal.getName());
     if (follower == null) {

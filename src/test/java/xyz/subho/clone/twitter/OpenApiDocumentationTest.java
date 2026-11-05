@@ -74,5 +74,25 @@ class OpenApiDocumentationTest {
     assertThat(openApi.at("/paths/~1v1~1posts/get/security/0/bearerAuth").isArray()).isTrue();
     assertThat(openApi.at("/paths/~1v1~1posts/post/security/0/csrfHeader").isArray()).isTrue();
     assertThat(openApi.at("/paths/~1v1~1users/patch/security/0/bearerAuth").isArray()).isTrue();
+    assertThat(openApi.at("/paths/~1v1~1users~1{userId}~1follow/put/responses/204").isMissingNode())
+        .isFalse();
+    assertThat(
+            openApi
+                .at("/paths/~1v1~1users~1{userId}~1follow/put/responses/204/content")
+                .isMissingNode())
+        .isTrue();
+    assertThat(
+            openApi.at("/paths/~1v1~1users~1{userId}~1follow/delete/responses/204").isMissingNode())
+        .isFalse();
+    assertThat(
+            openApi
+                .at("/paths/~1v1~1users~1{userId}~1follow/delete/responses/204/content")
+                .isMissingNode())
+        .isTrue();
+    assertThat(openApi.at("/paths/~1v1~1posts~1{postId}/delete/responses/200").isMissingNode())
+        .isFalse();
+    assertThat(
+            openApi.at("/paths/~1v1~1posts~1{postId}/delete/responses/200/content").isMissingNode())
+        .isTrue();
   }
 }
