@@ -12,6 +12,7 @@ site_dir = "site"
 exclude_docs = """
 tooling/
 """
+extra_css = ["styles.css"]
 nav = [
   { "Home" = "README.md" },
   { "Getting started" = [

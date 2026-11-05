@@ -1,0 +1,10 @@
+@media screen and (max-width: 44.984375rem) {
+  .md-typeset__scrollwrap,
+  .md-typeset details .md-typeset__scrollwrap {
+    margin-inline: 0;
+  }
+
+  .md-typeset__table {
+    width: 100%;
+  }
+}
