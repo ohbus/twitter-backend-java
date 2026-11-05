@@ -8,5 +8,6 @@ rules:
   operation-4xx-response: off
 
 openapi:
+  routingBasePath: /twitter-backend-java/api/reference
   schemaDefinitionsTagName: Models
   sortRequiredPropsFirst: true
