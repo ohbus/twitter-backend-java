@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-create-users-table" author="theprince001">
+        <createTable tableName="users">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(30)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="avatar" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)">
+                <constraints unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bio" type="VARCHAR(240)"/>
+            <column name="follower_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="following_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Changed from BOOLEAN to BIT to match Hibernate expectations -->
+            <column name="verified" type="BIT" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="users" indexName="idx_users_name">
+            <column name="name"/>
+        </createIndex>
+        <createIndex tableName="users" indexName="idx_users_bio">
+            <column name="bio"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="002-create-posts-table" author="theprince001">
+        <createTable tableName="posts">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="users_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_posts_users_id" references="users(id)"/>
+            </column>
+            <column name="text" type="VARCHAR(240)"/>
+            <column name="like_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="repost_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="orig_post_id" type="BINARY(16)"/>
+            <column name="reply_to_id" type="BINARY(16)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="posts" indexName="idx_posts_reply_to_created_at_id">
+            <column name="reply_to_id"/>
+            <column name="created_at"/>
+            <column name="id"/>
+        </createIndex>
+        <createIndex tableName="posts" indexName="idx_posts_orig_post_id">
+            <column name="orig_post_id"/>
+        </createIndex>
+        <createIndex tableName="posts" indexName="idx_posts_created_at_id">
+            <column name="created_at"/>
+            <column name="id"/>
+        </createIndex>
+        <createIndex tableName="posts" indexName="idx_posts_text">
+            <column name="text"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="003-create-posts-images-table" author="theprince001">
+        <createTable tableName="posts_images">
+            <column name="posts_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_posts_images_posts" references="posts(id)"/>
+            </column>
+            <column name="images" type="TIMESTAMP"/>
+            <column name="images_key" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="004-create-posts-hashtags-table" author="theprince001">
+        <createTable tableName="posts_hashtags">
+            <column name="posts_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_posts_hashtags_posts" references="posts(id)"/>
+            </column>
+            <column name="hashtags" type="TIMESTAMP"/>
+            <column name="hashtags_key" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="005-create-posts-mentions-table" author="theprince001">
+        <createTable tableName="posts_mentions">
+            <column name="posts_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_posts_mentions_posts" references="posts(id)"/>
+            </column>
+            <column name="mentions" type="TIMESTAMP"/>
+            <column name="mentions_key" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="006-create-follows-table" author="theprince001">
+        <createTable tableName="follows">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="follower_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_follows_follower" references="users(id)"/>
+            </column>
+            <column name="following_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_follows_following" references="users(id)"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="follows" columnNames="follower_id, following_id" constraintName="uk_follows_follower_following"/>
+        <createIndex tableName="follows" indexName="idx_follows_following_created_at">
+            <column name="following_id"/>
+            <column name="created_at"/>
+            <column name="id"/>
+        </createIndex>
+        <createIndex tableName="follows" indexName="idx_follows_follower_created_at">
+            <column name="follower_id"/>
+            <column name="created_at"/>
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="007-create-likes-table" author="theprince001">
+        <createTable tableName="likes">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="users_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_likes_users" references="users(id)"/>
+            </column>
+            <column name="posts_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_likes_posts" references="posts(id)"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="likes" columnNames="users_id, posts_id" constraintName="uk_likes_users_posts"/>
+        <createIndex tableName="likes" indexName="idx_likes_posts_id">
+            <column name="posts_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="008-create-hashtags-table" author="theprince001">
+        <createTable tableName="hashtags">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tag" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="post_count" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_hashtags_post_count_id" tableName="hashtags">
+            <column name="post_count"/>
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="009-create-hashtag-posts-table" author="theprince001">
+        <createTable tableName="hashtag_posts">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="hashtags_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_hashtag_posts_hashtags" references="hashtags(id)"/>
+            </column>
+            <column name="posts_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_hashtag_posts_posts" references="posts(id)"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="hashtag_posts" indexName="idx_hashtag_posts_hashtag_created_at">
+            <column name="hashtags_id"/>
+            <column name="created_at"/>
+            <column name="id"/>
+        </createIndex>
+        <createIndex tableName="hashtag_posts" indexName="idx_hashtag_posts_post_id">
+            <column name="posts_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="010-create-refresh-tokens-table" author="theprince001">
+        <createTable tableName="refresh_tokens">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="users_id" type="BINARY(16)">
+                <constraints nullable="false" foreignKeyName="fk_refresh_tokens_users" references="users(id)"/>
+            </column>
+            <column name="token" type="VARCHAR(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="expiry_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
