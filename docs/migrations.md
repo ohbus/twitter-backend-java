@@ -22,6 +22,7 @@ cp .env.example .env
 #    Wrap passwords in single quotes to prevent Compose from interpolating
 #    special characters (like $). For an apostrophe in a single-quoted 
 #    value, escape it with a backslash (e.g., DB_ROOT_PASS='can\'t').
+#    DB_PORT_HOST=3306
 #    DB_NAME=twitter_clone
 #    DB_USER=moo_user
 #    DB_PASS='moo_pass'
@@ -33,9 +34,10 @@ docker compose up -d db
 ```
 
 Maven does not read `.env` — export every value the application needs.
-The dev profile reads the database URL from `${DB_NAME:twitter_clone}` and the
-root password from `${DB_ROOT_PASS:root_pass}`, and it requires `JWT_SECRET`
-to be set (root `application.properties` uses `${JWT_SECRET}` with no default):
+The dev profile reads the database port from `${DB_PORT_HOST:3306}`, the
+database name from `${DB_NAME:twitter_clone}`, and the root password from
+`${DB_ROOT_PASS:root_pass}`. It also requires `JWT_SECRET` to be set (root
+`application.properties` uses `${JWT_SECRET}` with no default):
 
 ```bash
 # bash / zsh — use the values from your .env file
@@ -43,6 +45,7 @@ to be set (root `application.properties` uses `${JWT_SECRET}` with no default):
 # If your password contains a single quote, close the quote, insert an escaped 
 # quote, and open a new quote (e.g., 'can'\''t').
 export DB_NAME='<value of DB_NAME from .env>'
+export DB_PORT_HOST='<value of DB_PORT_HOST from .env>'
 export DB_ROOT_PASS='<value of DB_ROOT_PASS from .env>'
 export JWT_SECRET="$(openssl rand -hex 32)"
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
@@ -53,6 +56,7 @@ export JWT_SECRET="$(openssl rand -hex 32)"
 # Use single quotes to preserve special characters (like $) in the password.
 # If your password contains a single quote, double it (e.g., 'can''t').
 $env:DB_NAME = '<value of DB_NAME from .env>'
+$env:DB_PORT_HOST = '<value of DB_PORT_HOST from .env>'
 $env:DB_ROOT_PASS = '<value of DB_ROOT_PASS from .env>'
 $env:JWT_SECRET = '<at least 32 bytes of randomness>'
 ./mvnw spring-boot:run "-Dspring-boot.run.profiles=dev"

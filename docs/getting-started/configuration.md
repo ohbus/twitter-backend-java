@@ -27,8 +27,9 @@ The production profile reads:
 - `MYSQL_DB_UNAME`
 - `MYSQL_DB_PASSWD`
 
-The development profile uses MySQL on `localhost:3306` with the local Compose
-credentials. Tests use an in-memory H2 database in MySQL compatibility mode.
+The development profile uses MySQL on `localhost` with the local Compose
+credentials and `DB_PORT_HOST` port (`3306` by default). Tests use an in-memory
+H2 database in MySQL compatibility mode.
 
 ## API documentation
 
