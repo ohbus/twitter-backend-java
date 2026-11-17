@@ -20,8 +20,8 @@ cp .env.example .env
 # 2. Set nonempty values in .env for all required Compose variables
 #    (see docker-compose.base.yml for the full list).
 #    Wrap passwords in single quotes to prevent Compose from interpolating
-#    special characters (like $). For embedded single quotes in .env, 
-#    use double quotes and escape them, or double the single quote ('').
+#    special characters (like $). For an apostrophe in a single-quoted 
+#    value, escape it with a backslash (e.g., DB_ROOT_PASS='can\'t').
 #    DB_NAME=twitter_clone
 #    DB_USER=moo_user
 #    DB_PASS='moo_pass'
