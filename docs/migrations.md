@@ -18,12 +18,15 @@ Set up the environment file and start the database:
 cp .env.example .env
 
 # 2. Set nonempty values in .env for all required Compose variables
-#    (see docker-compose.base.yml for the full list):
-#    DB_NAME=
-#    DB_USER=
-#    DB_PASS=
-#    DB_ROOT_PASS=
-#    JWT_SECRET=<at least 32 bytes of randomness>
+#    (see docker-compose.base.yml for the full list).
+#    Wrap passwords in single quotes to prevent Compose from interpolating
+#    special characters (like $). For embedded single quotes in .env, 
+#    use double quotes and escape them, or double the single quote ('').
+#    DB_NAME=twitter_clone
+#    DB_USER=moo_user
+#    DB_PASS='moo_pass'
+#    DB_ROOT_PASS='root_pass'
+#    JWT_SECRET='<at least 32 bytes of randomness>'
 
 # 3. Start the database in detached mode so the command returns to the shell
 docker compose up -d db
@@ -61,6 +64,10 @@ Production applies pending changesets on application startup
 (`spring.liquibase.enabled=true` in `application.properties`). What happens
 when a migration fails depends on the deployment topology:
 
+- **Password Quoting:** Docker Compose `.env` files and shell exports handle special characters differently.
+  Always single-quote values containing `$` in `.env` (e.g., `DB_ROOT_PASS='pa$word'`).
+  When exporting the same value in a shell, use the shell-specific single-quote escaping shown above.
+  If you use double quotes in a shell, the shell will expand `$`.
 - **Rolling / blue-green deployments** (two app instances, traffic routed
   between them): the previous instance keeps serving traffic while the new
   instance applies migrations. If a migration fails, only the new instance is
