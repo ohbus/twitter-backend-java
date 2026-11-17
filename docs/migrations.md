@@ -29,9 +29,16 @@ cp .env.example .env
 #    DB_ROOT_PASS='root_pass'
 #    JWT_SECRET='<at least 32 bytes of randomness>'
 
-# 3. Start the database in detached mode so the command returns to the shell
+# 3. Bash / zsh: clear a stale shell override so Compose uses the .env port
+unset DB_PORT_HOST
+
+# 4. Start the database in detached mode so the command returns to the shell
 docker compose up -d db
 ```
+
+Shell variables take precedence over `.env`. If using PowerShell, run
+`Remove-Item Env:DB_PORT_HOST -ErrorAction SilentlyContinue` before starting
+Compose, or set `$env:DB_PORT_HOST` to the same value as `.env`.
 
 Maven does not read `.env` — export every value the application needs.
 The dev profile reads the database port from `${DB_PORT_HOST:3306}`, the
@@ -84,9 +91,16 @@ when a migration fails depends on the deployment topology:
 For zero-downtime migrations, use a multi-instance setup where the previous
 version keeps running while the new version applies changes.
 
-Rollback is **not a supported recovery path**. The current changelog does
-not define `<rollback>` blocks, so `liquibase:rollback` can only reverse
-changesets via Liquibase's auto-generated inverse operations — which for
+If a migration fails, inspect the application and Liquibase logs, the current
+database schema, and `DATABASECHANGELOG`. Liquibase stops at the failed
+changeset, so later corrections cannot run until the blocking failure is
+resolved. Fix the reported database, data, configuration, or changelog problem,
+then redeploy and verify that the failed changeset completes.
+
+Rollback is **not a supported recovery path**. The current changelog does not
+define `<rollback>` blocks, so `liquibase:rollback` can only reverse changesets
+via Liquibase's auto-generated inverse operations — which for
 `010-create-refresh-tokens-table` means dropping the table and all stored
-refresh tokens. If a migration needs to be reversed, deploy a new
-forward-only changeset that compensates for the previous one.
+refresh tokens. If a successfully applied migration needs to be reversed, add
+a new forward-only changeset that compensates for it; do not edit the recorded
+changeset.
